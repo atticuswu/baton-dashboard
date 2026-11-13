@@ -1,0 +1,2952 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baton 接力棒 AI 管理工具：跨機器專案管理怎麼做</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── 瑞士風格 design tokens ───────────────────────── */
+      :root {
+        --wrap-max: 1280px;
+        --ink: #111111;
+        --paper: #ffffff;
+        --red: #da291c;
+        --grey-600: #6b6b6b;
+        --grey-200: #d9d9d9;
+        --grey-100: #f2f2f2;
+        --font-sans: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Noto Sans TC",
+          "Microsoft JhengHei", sans-serif;
+        --mono: "SF Mono", Menlo, Consolas, "Noto Sans TC", monospace;
+        --fs-display: calc(clamp(56px, 8vw, 112px) * var(--fs, 1));
+        --fs-h1: calc(36px * var(--fs, 1));
+        --fs-body: calc(16px * var(--fs, 1));
+        --fs-caption: calc(12px * var(--fs, 1));
+        --lh-body: 1.7;
+        --margin: 48px;
+        --gutter: 24px;
+        --s1: 8px;
+        --s2: 16px;
+        --s3: 24px;
+        --s4: 32px;
+        --s6: 48px;
+        --s8: 64px;
+        --s12: 96px;
+        --rule: 1px solid var(--ink);
+        --hair: 1px solid var(--grey-200);
+        /* 讓舊元件對得上名字 */
+        --text-soft: var(--grey-600);
+        --slate: var(--ink);
+        --sans: var(--font-sans);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: var(--fs-body);
+        line-height: var(--lh-body);
+        text-align: left;
+        font-kerning: normal;
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+        text-align: left;
+      }
+      h1,
+      h2,
+      h3 {
+        text-wrap: balance;
+      }
+      p,
+      li,
+      td {
+        text-wrap: pretty;
+      }
+      a {
+        color: var(--ink);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-thickness: 1px;
+      }
+      em {
+        font-style: normal;
+        font-weight: 700;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.92em;
+      }
+      .ph {
+        display: inline-block;
+      }
+
+      /* ── 版心與網格 ───────────────────────── */
+      .wrap {
+        width: min(100% - 2 * var(--margin), var(--wrap-max));
+        margin: 0 auto;
+      }
+      .g12 {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: var(--gutter);
+      }
+      .label {
+        font-size: var(--fs-caption);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .muted {
+        color: var(--grey-600);
+      }
+      .display {
+        font-size: var(--fs-display);
+        line-height: 1.02;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-left: -0.04em;
+      }
+      .h1 {
+        font-size: var(--fs-h1);
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .prose {
+        max-width: 36em;
+      }
+      .rule-top {
+        border-top: var(--rule);
+        padding-top: var(--s2);
+      }
+      .hair-top {
+        border-top: var(--hair);
+        padding-top: var(--s2);
+      }
+
+      /* ── 頁首 ───────────────────────── */
+      header.hero {
+        border-bottom: var(--rule);
+      }
+      header.hero .g12 {
+        padding: var(--s6) 0 var(--s8);
+        row-gap: var(--s4);
+      }
+      .hero-label {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        gap: var(--s3);
+        flex-wrap: wrap;
+      }
+      .hero-title {
+        grid-column: 1 / 10;
+      }
+      .hero-figure {
+        grid-column: 10 / 13;
+        align-self: end;
+      }
+      .hero-figure svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .hero-figure .cap {
+        margin-top: var(--s1);
+      }
+      .hero-sub {
+        grid-column: 1 / 7;
+      }
+      .hero-nav {
+        grid-column: 7 / 13;
+      }
+      nav.toc {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: var(--gutter);
+        border-top: var(--rule);
+        padding-top: var(--s2);
+      }
+      nav.toc a {
+        display: flex;
+        gap: var(--s2);
+        padding: calc(6px * var(--dens, 1)) 0;
+        border-bottom: var(--hair);
+        text-decoration: none;
+      }
+      nav.toc a:hover {
+        text-decoration: underline;
+      }
+      nav.toc a .n {
+        font-size: var(--fs-caption);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        width: 2.4em;
+        flex-shrink: 0;
+        padding-top: calc(5px * var(--dens, 1));
+      }
+
+      /* ── 章節 ───────────────────────── */
+      main {
+        padding-bottom: calc(160px * var(--dens, 1));
+      }
+      section {
+        border-top: var(--rule);
+        padding: var(--s4) 0 var(--s12);
+        scroll-margin-top: 16px;
+      }
+      section .g12 {
+        row-gap: var(--s4);
+      }
+      .sec-side {
+        grid-column: 1 / 4;
+      }
+      .sec-side .num {
+        font-size: var(--fs-h1);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.01em;
+        color: var(--grey-600);
+      }
+      .sec-side h2 {
+        font-size: var(--fs-h1);
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-top: var(--s2);
+      }
+      .sec-side .sub {
+        margin-top: var(--s2);
+        max-width: 18em;
+      }
+      .sec-main {
+        grid-column: 4 / 13;
+        min-width: 0;
+      }
+      .sec-main > * + * {
+        margin-top: var(--s6);
+      }
+      h3 {
+        font-size: var(--fs-body);
+        font-weight: 700;
+        line-height: 1.4;
+        margin-bottom: var(--s2);
+      }
+      .lead {
+        font-size: var(--fs-h1);
+        line-height: 1.3;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        max-width: 22em;
+      }
+      .lead .accent {
+        color: var(--red);
+      }
+
+      /* ── 定義卡（無框，細線分欄）── */
+      .def-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: var(--gutter);
+        border-top: var(--rule);
+      }
+      .def-card {
+        padding-top: var(--s2);
+        min-width: 0;
+      }
+      .def-card .def-term {
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .def-card .orig {
+        display: block;
+        font-family: var(--mono);
+        font-size: var(--fs-caption);
+        font-weight: 400;
+        color: var(--grey-600);
+        margin-top: calc(2px * var(--dens, 1));
+      }
+      .def-card .def-oneliner {
+        margin-top: var(--s2);
+      }
+      .def-card .def-detail {
+        margin-top: var(--s1);
+        font-size: var(--fs-caption);
+        line-height: 1.6;
+        color: var(--grey-600);
+      }
+
+      /* ── 數字格 ── */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: var(--gutter);
+        border-top: var(--rule);
+      }
+      .stat-card {
+        padding-top: var(--s2);
+      }
+      .stat-card .stat-value {
+        font-size: var(--fs-display);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin-left: -0.04em;
+      }
+      .stat-card .stat-value.red {
+        color: var(--red);
+      }
+      .stat-card .stat-label {
+        margin-top: var(--s1);
+        font-weight: 500;
+      }
+      .stat-card .stat-sub {
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+        line-height: 1.6;
+      }
+
+      /* ── 重點框：左側粗豎線 ── */
+      .highlight-box {
+        border-left: 4px solid var(--ink);
+        padding: 4px 0 4px var(--s3);
+        max-width: 40em;
+      }
+      .highlight-box.red {
+        border-left-color: var(--red);
+      }
+
+      /* ── 類比橋 ── */
+      .analogy {
+        border-top: var(--rule);
+      }
+      .analogy-head {
+        padding: var(--s2) 0;
+        font-weight: 700;
+      }
+      .analogy-row {
+        display: grid;
+        grid-template-columns: 1fr 48px 1fr;
+        border-top: var(--hair);
+        padding: calc(10px * var(--dens, 1)) 0;
+      }
+      .analogy-row .known {
+        color: var(--grey-600);
+      }
+      .analogy-row .arrow {
+        text-align: center;
+        color: var(--grey-600);
+      }
+      .analogy-row .target {
+        font-weight: 500;
+      }
+      .analogy-limit {
+        border-top: var(--rule);
+        margin-top: var(--s2);
+        padding-top: var(--s2);
+        max-width: 40em;
+      }
+
+      /* ── 圖（SVG 殼）── */
+      .figure {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        border-top: var(--rule);
+        border-bottom: var(--hair);
+        padding: var(--s2) 0;
+      }
+      .figure svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      svg.vb1000 {
+        min-width: 860px;
+      }
+      svg.vb760 {
+        max-width: 760px;
+        min-width: 640px;
+      }
+      svg text {
+        font-family: var(--font-sans);
+        font-size: calc(12px * var(--fs, 1));
+        fill: var(--ink);
+      }
+      svg text.n {
+        font-size: calc(13px * var(--fs, 1));
+        font-weight: 700;
+      }
+      svg text.sm {
+        fill: var(--grey-600);
+      }
+      svg text.inv {
+        fill: var(--paper);
+      }
+      .figcap {
+        margin-top: var(--s1);
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+        max-width: 40em;
+      }
+
+      /* ── 分層（CLAUDE.md 三層）── */
+      .layers {
+        border-top: var(--rule);
+      }
+      .layer {
+        display: grid;
+        grid-template-columns: 2fr 5fr 2fr;
+        column-gap: var(--gutter);
+        border-bottom: var(--hair);
+        padding: var(--s2) 0;
+      }
+      .layer .name {
+        font-weight: 700;
+      }
+      .layer .path {
+        display: block;
+        font-family: var(--mono);
+        font-size: var(--fs-caption);
+        font-weight: 400;
+        color: var(--grey-600);
+      }
+      .layer .tag {
+        font-size: var(--fs-caption);
+        font-weight: 500;
+        color: var(--grey-600);
+      }
+      .layer.emph .tag {
+        color: var(--red);
+      }
+
+      /* ── 表格：只有水平線 ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        max-width: 100%;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1)) calc(10px * var(--dens, 1)) 0;
+      }
+      th {
+        border-bottom: var(--rule);
+        font-size: var(--fs-caption);
+        font-weight: 500;
+      }
+      td {
+        border-bottom: var(--hair);
+      }
+      td.b {
+        font-weight: 700;
+      }
+      .tbl-wrap {
+        overflow-x: auto;
+      }
+
+      /* ── 檔案樹 ── */
+      .file-tree {
+        border-top: var(--rule);
+        font-family: var(--mono);
+        font-size: calc(13px * var(--fs, 1));
+      }
+      .filerow {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 4fr);
+        column-gap: var(--gutter);
+        border-bottom: var(--hair);
+        padding: calc(6px * var(--dens, 1)) 0;
+        align-items: baseline;
+      }
+      .filerow .fn {
+        padding-left: calc(var(--d, 0) * 20px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .filerow .fn.dir {
+        font-weight: 700;
+      }
+      .filerow .fn.red {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .filerow .fd {
+        font-family: var(--font-sans);
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+        line-height: 1.6;
+      }
+
+      /* ── 走一遍：步驟與狀態 ── */
+      .steps {
+        border-top: var(--rule);
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 2fr 7fr;
+        column-gap: var(--gutter);
+        border-bottom: var(--hair);
+        padding: var(--s3) 0;
+      }
+      .step .when {
+        font-weight: 700;
+      }
+      .step .who {
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+        margin-top: calc(4px * var(--dens, 1));
+      }
+      .step .step-desc {
+        max-width: 36em;
+      }
+      .state-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: var(--gutter);
+        margin-top: var(--s2);
+        border-top: var(--hair);
+        padding-top: var(--s1);
+      }
+      .state-cell .k {
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+      }
+      .state-cell .v {
+        font-family: var(--mono);
+        font-size: calc(13px * var(--fs, 1));
+        margin-top: calc(2px * var(--dens, 1));
+      }
+      .state-cell .v.red {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .state-cell .v.dim {
+        color: var(--grey-600);
+      }
+
+      /* ── 誤解：兩欄對照 ── */
+      .myth {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: var(--gutter);
+        border-top: var(--hair);
+        padding: var(--s3) 0;
+      }
+      .myth:first-child {
+        border-top: var(--rule);
+      }
+      .myth .h {
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+        margin-bottom: var(--s1);
+      }
+      .myth .m-wrong .body {
+        color: var(--grey-600);
+      }
+      .myth .m-right .h {
+        color: var(--red);
+      }
+
+      /* ── 邊界 ── */
+      .bound-list {
+        border-top: var(--rule);
+      }
+      .bound {
+        display: grid;
+        grid-template-columns: 56px 2fr 5fr;
+        column-gap: var(--gutter);
+        border-bottom: var(--hair);
+        padding: var(--s2) 0;
+      }
+      .bound .ico {
+        font-weight: 700;
+        color: var(--red);
+      }
+      .bound b {
+        font-weight: 700;
+      }
+      .bound .why {
+        color: var(--grey-600);
+      }
+
+      /* ── 收合 ── */
+      details.reveal {
+        border-top: var(--hair);
+      }
+      details.reveal:first-of-type {
+        border-top: var(--rule);
+      }
+      details.reveal summary {
+        cursor: pointer;
+        padding: var(--s2) 0;
+        font-weight: 700;
+        list-style: none;
+        display: flex;
+        gap: var(--s2);
+        align-items: baseline;
+      }
+      details.reveal summary::-webkit-details-marker {
+        display: none;
+      }
+      details.reveal summary::before {
+        content: "+";
+        width: 1.2em;
+        flex-shrink: 0;
+        font-weight: 400;
+      }
+      details.reveal[open] summary::before {
+        content: "–";
+      }
+      details.reveal summary .tag {
+        font-size: var(--fs-caption);
+        font-weight: 500;
+        color: var(--grey-600);
+        margin-left: auto;
+      }
+      .reveal-body {
+        padding: 0 0 var(--s3) calc(1.2em + var(--s2));
+      }
+      .reveal-body > * + * {
+        margin-top: var(--s2);
+      }
+      pre {
+        font-family: var(--mono);
+        font-size: calc(13px * var(--fs, 1));
+        line-height: 1.6;
+        background: var(--grey-100);
+        padding: var(--s2) var(--s3);
+        margin: 0;
+        overflow-x: auto;
+        max-width: 100%;
+      }
+      ol.plain,
+      ul.plain {
+        margin: 0;
+        padding-left: 1.4em;
+      }
+      ol.plain li + li,
+      ul.plain li + li {
+        margin-top: calc(6px * var(--dens, 1));
+      }
+
+      /* ── 底部回傳列 ── */
+      .bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9000;
+        background: var(--paper);
+        border-top: var(--rule);
+      }
+      .bar .bar-in {
+        display: flex;
+        align-items: center;
+        gap: var(--s2);
+        padding: calc(10px * var(--dens, 1)) 0;
+        flex-wrap: wrap;
+      }
+      .bar .bar-msg {
+        font-size: calc(13px * var(--fs, 1));
+        color: var(--grey-600);
+        margin-right: auto;
+      }
+      .btn {
+        font-family: var(--font-sans);
+        font-size: calc(13px * var(--fs, 1));
+        font-weight: 500;
+        padding: calc(8px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        border: var(--rule);
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+        border-radius: 0;
+      }
+      .btn.primary {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .btn:hover {
+        background: var(--red);
+        border-color: var(--red);
+        color: var(--paper);
+      }
+      .drawer {
+        display: none;
+        border-top: var(--hair);
+        padding: var(--s2) 0;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .drawer.open {
+        display: block;
+      }
+      .drawer .drawer-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: var(--s1);
+      }
+      .drawer pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /* ── 全頁評論（瑞士風外觀）── */
+      .vt-comment-trigger {
+        position: fixed;
+        z-index: 9998;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        font-size: calc(12px * var(--fs, 1));
+        font-family: var(--font-sans);
+        cursor: pointer;
+        display: none;
+        align-items: center;
+      }
+      .vt-comment-popup {
+        position: fixed;
+        z-index: 9999;
+        background: var(--paper);
+        border: var(--rule);
+        padding: var(--s2);
+        width: 340px;
+        display: none;
+      }
+      .vt-comment-popup .quote {
+        border-left: 3px solid var(--ink);
+        padding: calc(4px * var(--dens, 1)) calc(10px * var(--dens, 1));
+        font-size: calc(12.5px * var(--fs, 1));
+        color: var(--grey-600);
+        line-height: 1.45;
+        margin-bottom: calc(10px * var(--dens, 1));
+        max-height: 80px;
+        overflow-y: auto;
+      }
+      .vt-comment-popup textarea {
+        width: 100%;
+        border: var(--rule);
+        border-radius: 0;
+        padding: calc(8px * var(--dens, 1)) calc(10px * var(--dens, 1));
+        font-size: calc(13px * var(--fs, 1));
+        font-family: var(--font-sans);
+        resize: vertical;
+        min-height: 60px;
+        color: var(--ink);
+      }
+      .vt-comment-popup textarea:focus {
+        outline: 2px solid var(--red);
+        outline-offset: 0;
+      }
+      .vt-comment-popup .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: calc(10px * var(--dens, 1));
+        font-size: calc(11.5px * var(--fs, 1));
+      }
+      .vt-comment-popup .hint {
+        color: var(--grey-600);
+      }
+      .vt-comment-popup button {
+        font-family: var(--font-sans);
+        font-size: calc(12.5px * var(--fs, 1));
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        border: var(--rule);
+        border-radius: 0;
+        cursor: pointer;
+        background: var(--paper);
+        color: var(--ink);
+      }
+      .vt-comment-popup button.send {
+        background: var(--ink);
+        color: var(--paper);
+        margin-left: calc(8px * var(--dens, 1));
+      }
+      mark.vt-comment-mark {
+        background: #f7d4d1;
+        color: inherit;
+        padding: 0 calc(2px * var(--dens, 1));
+        cursor: pointer;
+      }
+      .vt-comment-pill {
+        position: fixed;
+        right: 16px;
+        bottom: 72px;
+        z-index: 9990;
+        background: var(--paper);
+        border: var(--rule);
+        padding: calc(8px * var(--dens, 1)) calc(14px * var(--dens, 1));
+        font-family: var(--font-sans);
+        font-size: calc(12px * var(--fs, 1));
+        color: var(--ink);
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        gap: calc(6px * var(--dens, 1));
+      }
+      .vt-comment-pill.is-active {
+        display: inline-flex;
+      }
+      .vt-comment-list {
+        position: fixed;
+        right: 16px;
+        bottom: 116px;
+        width: 360px;
+        max-height: 60vh;
+        z-index: 9991;
+        background: var(--paper);
+        border: var(--rule);
+        display: none;
+        flex-direction: column;
+      }
+      .vt-comment-list.is-open {
+        display: flex;
+      }
+      .vt-comment-list-header {
+        border-bottom: var(--rule);
+        padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        font-size: calc(11px * var(--fs, 1));
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .vt-comment-list-items {
+        overflow-y: auto;
+        flex: 1;
+      }
+      .vt-comment-item {
+        padding: calc(12px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        border-bottom: var(--hair);
+      }
+      .vt-comment-item .item-quote {
+        font-size: calc(11.5px * var(--fs, 1));
+        color: var(--grey-600);
+        border-left: 2px solid var(--grey-200);
+        padding-left: calc(8px * var(--dens, 1));
+        line-height: 1.4;
+        margin-bottom: calc(6px * var(--dens, 1));
+      }
+      .vt-comment-item .item-body {
+        font-size: calc(13px * var(--fs, 1));
+        line-height: 1.5;
+      }
+      .vt-comment-item .item-del {
+        font-size: calc(11px * var(--fs, 1));
+        color: var(--grey-600);
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-top: calc(4px * var(--dens, 1));
+        padding: 0;
+        font-family: inherit;
+        text-decoration: underline;
+      }
+      .vt-comment-list-footer {
+        border-top: var(--rule);
+        padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        display: flex;
+        justify-content: space-between;
+        gap: calc(8px * var(--dens, 1));
+      }
+      .vt-comment-list-footer button {
+        background: var(--paper);
+        border: var(--rule);
+        border-radius: 0;
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        font-size: calc(12px * var(--fs, 1));
+        color: var(--ink);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .vt-comment-list-footer button.copy {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      body.vt-has-existing-export .vt-comment-list-footer button.copy {
+        display: none;
+      }
+
+      /* ── 頁尾 ── */
+      footer.foot {
+        border-top: var(--rule);
+        padding: var(--s3) 0 var(--s8);
+        display: flex;
+        justify-content: space-between;
+        gap: var(--s3);
+        flex-wrap: wrap;
+        font-size: var(--fs-caption);
+        color: var(--grey-600);
+      }
+
+      /* ── 列印 ── */
+      @media print {
+        .bar,
+        .vt-comment-pill,
+        .vt-comment-list,
+        .vt-comment-trigger,
+        .vt-comment-popup {
+          display: none !important;
+        }
+        main {
+          padding-bottom: 0;
+        }
+      }
+
+      /* ── 手機與窄螢幕 ── */
+      @media (max-width: 900px) {
+        .sec-side,
+        .sec-main,
+        .hero-title,
+        .hero-sub,
+        .hero-nav,
+        .hero-figure {
+          grid-column: 1 / -1;
+        }
+        .hero-figure {
+          max-width: 240px;
+        }
+        .def-grid,
+        .stat-grid {
+          grid-template-columns: 1fr 1fr;
+          row-gap: var(--s3);
+        }
+        .def-card,
+        .stat-card {
+          border-top: var(--hair);
+        }
+        .step {
+          grid-template-columns: 1fr;
+          row-gap: var(--s1);
+        }
+        .layer {
+          grid-template-columns: 1fr;
+          row-gap: calc(4px * var(--dens, 1));
+        }
+        .bound {
+          grid-template-columns: 40px 1fr;
+        }
+        .bound .why {
+          grid-column: 2;
+        }
+      }
+      @media (max-width: 640px) {
+        :root {
+          --margin: 16px;
+          --gutter: 16px;
+          --fs-h1: calc(28px * var(--fs, 1));
+        }
+        .def-grid,
+        .stat-grid,
+        .state-grid,
+        .myth,
+        .analogy-row {
+          grid-template-columns: 1fr;
+          row-gap: var(--s1);
+        }
+        .analogy-row .arrow {
+          display: none;
+        }
+        nav.toc {
+          grid-template-columns: 1fr;
+        }
+        .filerow {
+          grid-template-columns: 1fr;
+        }
+        .filerow .fd {
+          padding-left: calc(var(--d, 0) * 20px);
+        }
+        .myth .m-right {
+          border-top: var(--hair);
+          padding-top: var(--s1);
+        }
+        .lead {
+          font-size: calc(22px * var(--fs, 1));
+        }
+        .stat-card .stat-value {
+          font-size: calc(48px * var(--fs, 1));
+        }
+        .bar .bar-msg {
+          flex-basis: 100%;
+        }
+        .vt-comment-list {
+          width: calc(100vw - 32px);
+        }
+        pre {
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: calc(12px * var(--fs, 1));
+        }
+        table.cards,
+        table.cards tbody,
+        table.cards tr,
+        table.cards td {
+          display: block;
+          width: 100%;
+        }
+        table.cards colgroup,
+        table.cards thead {
+          display: none;
+        }
+        table.cards tr {
+          border-top: var(--rule);
+          padding: var(--s2) 0;
+        }
+        table.cards td {
+          border-bottom: 0;
+          padding: calc(4px * var(--dens, 1)) 0;
+        }
+        table.cards td::before {
+          content: attr(data-label);
+          display: block;
+          font-size: var(--fs-caption);
+          color: var(--grey-600);
+        }
+      }
+    </style>
+  <style id="vt-profile" data-profile-hash="da39a3ee5e"></style>
+</head>
+  <body>
+    <!-- ════════ 頁首 ════════ -->
+    <header class="hero">
+      <div class="wrap">
+        <div class="g12">
+          <div class="hero-label label">
+            <span>01 — Atticus · 專案管理架構</span>
+            <span class="muted">2026-11-07 更新 · 白話版</span>
+          </div>
+          <div class="hero-title">
+            <h1 class="display">Baton 接力棒<br />AI 管理工具</h1>
+          </div>
+          <div class="hero-figure">
+            <svg viewBox="0 0 240 240" role="img" aria-labelledby="hero-t">
+              <title id="hero-t">三個黑方塊代表三台機器，一個紅方塊代表 GitHub 倉庫，三條線都指向它</title>
+              <rect x="0" y="0" width="56" height="56" fill="#111111" />
+              <rect x="0" y="92" width="56" height="56" fill="#111111" />
+              <rect x="0" y="184" width="56" height="56" fill="#111111" />
+              <rect x="152" y="76" width="88" height="88" fill="#da291c" />
+              <line x1="56" y1="28" x2="152" y2="28" stroke="#111111" stroke-width="2" />
+              <line x1="152" y1="28" x2="152" y2="76" stroke="#111111" stroke-width="2" />
+              <line x1="56" y1="120" x2="152" y2="120" stroke="#111111" stroke-width="2" />
+              <line x1="56" y1="212" x2="152" y2="212" stroke="#111111" stroke-width="2" />
+              <line x1="152" y1="212" x2="152" y2="164" stroke="#111111" stroke-width="2" />
+            </svg>
+            <div class="cap label muted">三台機器 · 一個倉庫</div>
+          </div>
+          <div class="hero-sub">
+            <p class="prose">
+              Mac mini、MacBook Air、Groq bot 各自開 session，但進度只記在一個地方：GitHub 上的中樞倉庫。
+              開工先拉下來，收工自動推上去。這一頁用白話把整套做法從頭走一遍，
+              讀完你會知道每個檔案放哪、誰在什麼時候寫它、三台機器怎麼接力。
+            </p>
+          </div>
+          <div class="hero-nav">
+            <nav class="toc">
+              <a href="#what"><span class="n">01</span>以 Git 為核心的做法</a>
+              <a href="#analogy"><span class="n">02</span>每次完成都會有接力的文件</a>
+              <a href="#model"><span class="n">03</span>GitHub 中樞倉庫</a>
+              <a href="#walk"><span class="n">04</span>一天流程</a>
+              <a href="#myth"><span class="n">05</span>最容易想錯的四件事</a>
+              <a href="#bound"><span class="n">06</span>什麼時候會卡住</a>
+              <a href="#deep"><span class="n">07</span>要動手時看這裡</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ════════ 01 一句話 ════════ -->
+      <section id="what">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">01</div>
+              <h2>以 Git 為核心的做法</h2>
+              <p class="sub muted">先給你一個錨點，後面的細節才掛得上去。</p>
+            </div>
+            <div class="sec-main">
+              <p class="lead">
+                所有專案的進度檔都放在<span class="accent">同一個 Git 倉庫</span>裡。
+                每台機器 clone 同一份，開工先拉，收工就推。
+              </p>
+
+              <div>
+                <h3>這套做法只有四樣東西</h3>
+                <div class="def-grid">
+                  <div class="def-card">
+                    <div class="def-term">中樞倉庫<span class="orig">hub repo</span></div>
+                    <div class="def-oneliner">一個私有的 GitHub 倉庫，所有專案的進度檔都住在裡面。</div>
+                    <div class="def-detail">三台機器都 clone 到同一個路徑，例如 ~/Project/Baton/。它是唯一的真相，儀表板只是它的視圖。</div>
+                  </div>
+                  <div class="def-card">
+                    <div class="def-term">流水帳<span class="orig">progress.md</span></div>
+                    <div class="def-oneliner">每次 session 做完，往後面加一段。只追加，不改舊的。</div>
+                    <div class="def-detail">標日期、機器、做了什麼、卡在哪。因為只往後加，兩台機器同時寫也幾乎不會撞。</div>
+                  </div>
+                  <div class="def-card">
+                    <div class="def-term">交接單<span class="orig">handoff.md</span></div>
+                    <div class="def-oneliner">目前做到哪、下一步是什麼。整份改寫，維持 40 行以內。</div>
+                    <div class="def-detail">開頭一小段結構化欄位，儀表板就讀這裡。下一個 session 不管在哪台機器，先讀它就能接手。</div>
+                  </div>
+                  <div class="def-card">
+                    <div class="def-term">規則<span class="orig">CLAUDE.md</span></div>
+                    <div class="def-oneliner">告訴 Claude 怎麼工作的說明書。很少改。</div>
+                    <div class="def-detail">分三層：機器層、中樞層、專案層。Claude 開 session 時會自動把這三層都讀進去。</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <div class="stat-value">3</div>
+                  <div class="stat-label">台機器</div>
+                  <div class="stat-sub">Mac mini、MacBook Air、Grok Bot 的雲端 Linux（Groq bot 主機），11/07 三台都接好</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value red">1</div>
+                  <div class="stat-label">個倉庫</div>
+                  <div class="stat-sub">所有專案的進度都在這一個 GitHub 倉庫</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">2</div>
+                  <div class="stat-label">個進度檔</div>
+                  <div class="stat-sub">每個專案一份流水帳、一份交接單</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">個資料庫</div>
+                  <div class="stat-sub">不用伺服器、不用即時連線，git 就是同步機制</div>
+                </div>
+              </div>
+
+              <div class="highlight-box red">
+                <strong>不這樣做會怎樣：</strong>進度散在三台機器上，每次開 session 都要重新講一次背景。
+                儀表板沒有資料來源可以讀。Groq bot 不知道你在 Mac 上做到哪，反過來也一樣。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 02 類比 ════════ -->
+      <section id="analogy">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">02</div>
+              <h2>每次完成都會有接力的文件</h2>
+              <p class="sub muted">先有個粗略的畫面，下一段再換成正確的結構。</p>
+            </div>
+            <div class="sec-main">
+              <div class="analogy">
+                <div class="analogy-head">整套做法就像公司裡的交接本，放在一個大家都拿得到的共用櫃子。</div>
+                <div class="analogy-row">
+                  <span class="known">共用櫃子，誰都能打開</span>
+                  <span class="arrow">=</span>
+                  <span class="target">GitHub 上的中樞倉庫</span>
+                </div>
+                <div class="analogy-row">
+                  <span class="known">每個專案一本交接本，第一頁寫「現在做到哪、下一步」</span>
+                  <span class="arrow">=</span>
+                  <span class="target">handoff.md 交接單</span>
+                </div>
+                <div class="analogy-row">
+                  <span class="known">交接本後面的日誌頁，每天往後寫一條</span>
+                  <span class="arrow">=</span>
+                  <span class="target">progress.md 流水帳</span>
+                </div>
+                <div class="analogy-row">
+                  <span class="known">貼在櫃子門上的工作守則</span>
+                  <span class="arrow">=</span>
+                  <span class="target">CLAUDE.md 規則</span>
+                </div>
+                <div class="analogy-row">
+                  <span class="known">上班先翻交接本，下班寫完放回櫃子</span>
+                  <span class="arrow">=</span>
+                  <span class="target">開 session 先 pull，收工自動 push</span>
+                </div>
+                <div class="analogy-limit">
+                  <strong>類比在哪裡不準：</strong>紙本只有一份，兩個人同時拿走就打架，而且舊的寫法擦掉就沒了。
+                  Git 則是每台機器各有一份完整副本，每一版都留著。兩邊同時改到同一行時，它會明確告訴你撞到了，不會默默蓋掉。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 03 核心模型 ════════ -->
+      <section id="model">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">03</div>
+              <h2>GitHub 中樞倉庫</h2>
+              <p class="sub muted">誰連到誰、檔案放哪、哪個檔案誰來寫。</p>
+            </div>
+            <div class="sec-main">
+              <div>
+                <h3>三台機器都只跟 GitHub 說話，彼此不直接連線</h3>
+                <div class="figure">
+                  <svg class="vb1000" viewBox="0 0 1000 380" role="img" aria-labelledby="arch-t arch-d">
+                    <title id="arch-t">三台機器、儀表板與雲端 session 都連到同一個 GitHub 中樞倉庫</title>
+                    <desc id="arch-d">左邊三台機器各自拉取與推送到中間的中樞倉庫；右邊的儀表板讀取並改寫倉庫，雲端 session 也走同一套流程。</desc>
+                    <defs>
+                      <marker id="pm-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse">
+                        <polygon points="0 0, 8 3, 0 6" fill="#111111" />
+                      </marker>
+                    </defs>
+                    <rect width="100%" height="100%" fill="#ffffff" />
+                    <!-- 連線先畫 -->
+                    <g class="edge" data-from="m1" data-to="hub" data-label="">
+                      <path class="hit" d="M240,76 H312 Q320,76 320,84 V160 Q320,168 328,168 H400" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M240,76 H312 Q320,76 320,84 V160 Q320,168 328,168 H400" fill="none" stroke="#111111" stroke-width="1.5" marker-start="url(#pm-arrow)" marker-end="url(#pm-arrow)" />
+                    </g>
+                    <g class="edge" data-from="m2" data-to="hub" data-label="pull 再 push">
+                      <path class="hit" d="M240,186 H400" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M240,186 H400" fill="none" stroke="#111111" stroke-width="1.5" marker-start="url(#pm-arrow)" marker-end="url(#pm-arrow)" />
+                    </g>
+                    <g class="edge" data-from="m3" data-to="hub" data-label="">
+                      <path class="hit" d="M240,296 H312 Q320,296 320,288 V212 Q320,204 328,204 H400" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M240,296 H312 Q320,296 320,288 V212 Q320,204 328,204 H400" fill="none" stroke="#111111" stroke-width="1.5" marker-start="url(#pm-arrow)" marker-end="url(#pm-arrow)" />
+                    </g>
+                    <g class="edge" data-from="hub" data-to="dash" data-label="看、改">
+                      <path class="hit" d="M600,174 H672 Q680,174 680,166 V84 Q680,76 688,76 H760" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M600,174 H672 Q680,174 680,166 V84 Q680,76 688,76 H760" fill="none" stroke="#111111" stroke-width="1.5" marker-start="url(#pm-arrow)" marker-end="url(#pm-arrow)" />
+                    </g>
+                    <g class="edge" data-from="hub" data-to="cloud" data-label="同一套">
+                      <path class="hit" d="M600,198 H672 Q680,198 680,206 V288 Q680,296 688,296 H760" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M600,198 H672 Q680,198 680,206 V288 Q680,296 688,296 H760" fill="none" stroke="#111111" stroke-width="1.5" stroke-dasharray="5,4" marker-start="url(#pm-arrow)" marker-end="url(#pm-arrow)" />
+                    </g>
+                    <!-- 箭頭標籤 -->
+                    <g class="elabel">
+                      <rect x="280" y="164" width="80" height="16" fill="#ffffff" />
+                      <text x="320" y="176" text-anchor="middle" class="sm">pull 再 push</text>
+                    </g>
+                    <g class="elabel">
+                      <rect x="686" y="117" width="46" height="16" fill="#ffffff" />
+                      <text x="690" y="129" class="sm">看、改</text>
+                    </g>
+                    <g class="elabel">
+                      <rect x="686" y="239" width="46" height="16" fill="#ffffff" />
+                      <text x="690" y="251" class="sm">同一套</text>
+                    </g>
+                    <!-- 節點 -->
+                    <g class="node" data-id="m1" data-kind="ours" data-title="Mac mini" transform="translate(40,40)">
+                      <rect class="box" width="200" height="72" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="28" class="n">Mac mini</text>
+                      <text x="16" y="48" class="sm">Claude App · content studio、貓下去</text>
+                    </g>
+                    <g class="node" data-id="m2" data-kind="ours" data-title="MacBook Air" transform="translate(40,150)">
+                      <rect class="box" width="200" height="72" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="28" class="n">MacBook Air</text>
+                      <text x="16" y="48" class="sm">Claude App</text>
+                    </g>
+                    <g class="node" data-id="m3" data-kind="ours" data-title="Groq bot 主機" transform="translate(40,260)">
+                      <rect class="box" width="200" height="72" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="28" class="n">Groq bot 主機</text>
+                      <text x="16" y="48" class="sm">claude 指令列 · 兩個 bot</text>
+                    </g>
+                    <g class="node" data-id="hub" data-kind="store" data-title="GitHub 中樞倉庫" transform="translate(400,150)">
+                      <rect class="box" width="200" height="72" fill="#da291c" stroke="#da291c" stroke-width="1.5" />
+                      <text x="16" y="28" class="n inv">GitHub 中樞倉庫</text>
+                      <text x="16" y="48" class="inv">唯一的真相 · 私有</text>
+                    </g>
+                    <g class="node" data-id="dash" data-kind="ours" data-title="儀表板網頁" transform="translate(760,40)">
+                      <rect class="box" width="200" height="72" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="28" class="n">儀表板網頁</text>
+                      <text x="16" y="48" class="sm">手機、任何電腦都能開</text>
+                    </g>
+                    <g class="node" data-id="cloud" data-kind="external" data-title="雲端 Claude session" transform="translate(760,260)">
+                      <rect class="box" width="200" height="72" fill="#f2f2f2" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="28" class="n">雲端 Claude session</text>
+                      <text x="16" y="48" class="sm">像現在這一個，只看得到 GitHub</text>
+                    </g>
+                  </svg>
+                </div>
+                <p class="figcap">
+                  實線是「拉下來再推上去」，雙向都走。虛線表示雲端 session 走同一套規則，只是它沒有本機硬碟，一切從 GitHub 拿。
+                  紅色那一格是整套系統唯一的真相。
+                </p>
+              </div>
+
+              <div>
+                <h3>三個檔案各管一件事，不要混</h3>
+                <div class="tbl-wrap">
+                  <table class="cards">
+                    <colgroup>
+                      <col style="width: 16%" />
+                      <col style="width: 20%" />
+                      <col style="width: 32%" />
+                      <col style="width: 32%" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th>檔案</th>
+                        <th>它是什麼</th>
+                        <th>誰在什麼時候寫</th>
+                        <th>誰來讀</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="b" data-label="檔案">CLAUDE.md</td>
+                        <td data-label="它是什麼">規則。怎麼工作、資料夾怎麼放、檔案格式長怎樣。</td>
+                        <td data-label="誰在什麼時候寫">你，偶爾改一次。狀態不要寫進來。</td>
+                        <td data-label="誰來讀">Claude 每次開 session 自動讀。</td>
+                      </tr>
+                      <tr>
+                        <td class="b" data-label="檔案">handoff.md</td>
+                        <td data-label="它是什麼">現況。做到哪、下一步、要小心什麼。40 行以內。</td>
+                        <td data-label="誰在什麼時候寫">Claude 每輪做完整份改寫。你也可以在儀表板改。</td>
+                        <td data-label="誰來讀">下一個 session 的 Claude，還有儀表板。</td>
+                      </tr>
+                      <tr>
+                        <td class="b" data-label="檔案">progress.md</td>
+                        <td data-label="它是什麼">流水帳。每段標日期、機器、做了什麼。</td>
+                        <td data-label="誰在什麼時候寫">Claude 每輪做完往後追加一段，不動舊的。</td>
+                        <td data-label="誰來讀">你回頭查歷史時，還有儀表板的「記錄簿」頁。</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div>
+                <h3>CLAUDE.md 分三層，開 session 時會一層一層疊上去</h3>
+                <div class="layers">
+                  <div class="layer">
+                    <span class="name">機器層<span class="path">~/.claude/CLAUDE.md</span></span>
+                    <span class="role">每台機器各寫各的。寫「本機代號 mac-mini」、語言偏好、你的個人習慣。有了它，流水帳才標得出是哪台機器寫的。旁邊的 ~/.claude/settings.json 放 hooks，不管在哪個資料夾開 session 都生效。</span>
+                    <span class="tag">每台不同</span>
+                  </div>
+                  <div class="layer emph">
+                    <span class="name">中樞層<span class="path">~/Project/Baton/CLAUDE.md</span></span>
+                    <span class="role">工作流程的四個固定步驟：讀交接單、做事、追加流水帳、改寫交接單後推上去。也寫資料夾規則與檔案格式。</span>
+                    <span class="tag">全部共用</span>
+                  </div>
+                  <div class="layer">
+                    <span class="name">專案層<span class="path">~/Project/Baton/content-studio/CLAUDE.md</span></span>
+                    <span class="role">只寫這個專案的背景、技術、禁忌。再用一行 @handoff.md 把交接單匯進來，Claude 一開就讀到現況。</span>
+                    <span class="tag">每專案一份</span>
+                  </div>
+                </div>
+                <p class="figcap">Claude Code 會從你所在的資料夾一路往上找 CLAUDE.md 全部載入，所以在專案資料夾開 session，三層自然都在。</p>
+              </div>
+
+              <div>
+                <h3>資料夾長這樣，clone 下來三台機器自動一模一樣</h3>
+                <div class="file-tree">
+                  <div class="filerow"><span class="fn dir red">~/Project/Baton/</span><span class="fd">中樞倉庫。三台機器都放這個路徑，設定檔裡的絕對路徑才能一份走天下。</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn">CLAUDE.md</span><span class="fd">中樞層規則</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn">projects.yaml</span><span class="fd">專案登錄表：每個專案叫什麼、狀態、程式碼放在哪個倉庫</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn">scripts/settings.json</span><span class="fd">hooks 的範本。注意：專案層的 .claude/settings.json 只在啟動資料夾生效，不會往上找，所以 hooks 要抄進每台機器的 ~/.claude/settings.json</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn">scripts/sync.sh</span><span class="fd">有改動才 commit 加 push 的小腳本</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn dir">dashboard/</span><span class="fd">儀表板的網頁原始碼，和自動產生的 data.json</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn dir">_templates/</span><span class="fd">新專案的範本，複製一份就能開新專案</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn dir">all-invest/</span><span class="fd">你現有的投資策略文件，直接搬進來</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn dir">content-studio/</span><span class="fd">一個專案一個資料夾</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn">CLAUDE.md</span><span class="fd">專案層規則，含 @handoff.md 那一行</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn">handoff.md</span><span class="fd">交接單</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn">progress.md</span><span class="fd">流水帳</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn dir">docs/</span><span class="fd">給人看的文件，markdown</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn dir">site/</span><span class="fd">輸出的 HTML，可以直接用 GitHub Pages 發布</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn dir">src/</span><span class="fd">程式碼，小專案才放這裡；大專案另開倉庫</span></div>
+                  <div class="filerow" style="--d: 2"><span class="fn dir">out/</span><span class="fd">影片、圖片等大檔。不進 git，放 iCloud</span></div>
+                  <div class="filerow" style="--d: 1"><span class="fn dir">maoxiaqu/</span><span class="fd">貓下去，結構同上</span></div>
+                </div>
+                <p class="figcap">
+                  大型程式碼專案，例如 Groq bot 本身，放在自己的倉庫。中樞只放它的三個控制檔，程式碼倉庫的 CLAUDE.md 加一行
+                  @~/Project/Baton/groq-bot/handoff.md，在程式碼倉庫開 session 也讀得到交接單。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 04 走一遍 ════════ -->
+      <section id="walk">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">04</div>
+              <h2>一天流程</h2>
+              <p class="sub muted">用 content studio 當例子，看同一份交接單在三台機器之間怎麼跑。</p>
+            </div>
+            <div class="sec-main">
+              <div class="steps">
+                <div class="step">
+                  <div>
+                    <div class="when">09:00 開工</div>
+                    <div class="who">Mac mini</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">你在 Claude App 選了 content-studio 這個資料夾開 session。SessionStart hook 先跑 git pull，本機跟 GitHub 對齊。Claude 讀到交接單，知道上次做到哪。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">Mac mini 本機</div><div class="v">第 12 版 · 乾淨</div></div>
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v">第 12 版</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v dim">第 11 版 · 還沒開機</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div>
+                    <div class="when">10:30 做完一輪</div>
+                    <div class="who">Mac mini</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">Claude 照 CLAUDE.md 的規則，在流水帳後面加一段「10:30 · mac-mini · 完成匯出腳本」，再把交接單整份改寫成新的現況。這時本機有了還沒提交的改動。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">Mac mini 本機</div><div class="v red">第 12 版 + 未提交改動</div></div>
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v">第 12 版</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v dim">第 11 版</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div>
+                    <div class="when">10:30 同一秒</div>
+                    <div class="who">Stop hook</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">Claude 回答完，Stop hook 觸發 sync.sh。它看到有改動，就 commit 成第 13 版，先 pull 看看別台有沒有推新東西，沒有，然後 push。GitHub 更新了。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">Mac mini 本機</div><div class="v">第 13 版 · 乾淨</div></div>
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v red">第 13 版</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v dim">第 11 版</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div>
+                    <div class="when">11:00 又聊了幾輪</div>
+                    <div class="who">Stop hook</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">你問了幾個問題，Claude 回答但沒碰任何檔案。Stop hook 每一輪都跑，但 sync.sh 看到沒改動就靜靜結束，不會產生空的 commit。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">Mac mini 本機</div><div class="v">第 13 版 · 乾淨</div></div>
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v">第 13 版</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v dim">第 11 版</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div>
+                    <div class="when">14:00 換台電腦</div>
+                    <div class="who">MacBook Air</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">你帶著 MacBook Air 出門，開同一個專案的 session。SessionStart hook 跑 git pull，一口氣從第 11 版跳到第 13 版。Claude 讀交接單，接著早上的進度做。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">Mac mini 本機</div><div class="v dim">第 13 版 · 沒在用</div></div>
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v">第 13 版</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v red">第 13 版 · 接手</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div>
+                    <div class="when">14:30 在手機上改</div>
+                    <div class="who">儀表板</div>
+                  </div>
+                  <div>
+                    <p class="step-desc">你在手機上開 baton.atticus.tw，把一條任務打勾：儀表板用存在瀏覽器裡的 token 直接改 GitHub 上的 handoff.md，等於多了第 14 版。另一條任務的輸入列你打了「已完成，補一句現況」：儀表板開一張帶 claude 標籤的 Issue，GitHub Actions 裡的 Claude 讀交接單、改檔、commit，第 15 版。晚上 Groq bot 開 session 時 pull 到，就照新的下一步做。</p>
+                    <div class="state-grid">
+                      <div class="state-cell"><div class="k">GitHub</div><div class="v red">第 14 版 · 儀表板改的</div></div>
+                      <div class="state-cell"><div class="k">MacBook Air</div><div class="v">下一輪 Stop hook 會 pull 到</div></div>
+                      <div class="state-cell"><div class="k">Groq bot</div><div class="v dim">晚上開 session 時 pull 到</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3>sync.sh 每一輪都在做的判斷</h3>
+                <div class="figure">
+                  <svg class="vb760" viewBox="0 0 760 700" role="img" aria-labelledby="sync-t sync-d">
+                    <title id="sync-t">sync.sh 的流程：有改動才提交，拉取時撞到衝突就停下，否則推上去</title>
+                    <desc id="sync-d">從 Claude 回答完一輪開始，先判斷進度檔有沒有改動，沒有就結束；有就提交、拉取別台的版本，撞到衝突就停下等人解，沒撞到就推上 GitHub，另一台機器開 session 時拉到最新，回到起點。</desc>
+                    <defs>
+                      <marker id="sy-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#111111" />
+                      </marker>
+                    </defs>
+                    <rect width="100%" height="100%" fill="#ffffff" />
+                    <!-- 連線 -->
+                    <g class="edge" data-from="s1" data-to="s2" data-label="">
+                      <path class="hit" d="M220,68 V100" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,68 V100" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s2" data-to="s3" data-label="否">
+                      <path class="hit" d="M340,140 H460" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M340,140 H460" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s2" data-to="s4" data-label="是">
+                      <path class="hit" d="M220,180 V220" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,180 V220" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s4" data-to="s5" data-label="">
+                      <path class="hit" d="M220,276 V316" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,276 V316" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s5" data-to="s6" data-label="">
+                      <path class="hit" d="M220,372 V392" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,372 V392" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s6" data-to="s7" data-label="是">
+                      <path class="hit" d="M340,432 H460" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M340,432 H460" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s6" data-to="s8" data-label="否">
+                      <path class="hit" d="M220,472 V512" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,472 V512" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s8" data-to="s9" data-label="GitHub 更新了">
+                      <path class="hit" d="M220,568 V608" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M220,568 V608" fill="none" stroke="#111111" stroke-width="1.5" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <g class="edge" data-from="s9" data-to="s1" data-label="回到起點">
+                      <path class="hit" d="M100,636 H48 Q40,636 40,628 V52 Q40,44 48,44 H100" fill="none" stroke="transparent" stroke-width="14" />
+                      <path class="ln" d="M100,636 H48 Q40,636 40,628 V52 Q40,44 48,44 H100" fill="none" stroke="#111111" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#sy-arrow)" />
+                    </g>
+                    <!-- 標籤 -->
+                    <g class="elabel"><rect x="388" y="118" width="24" height="16" fill="#ffffff" /><text x="400" y="130" text-anchor="middle">否</text></g>
+                    <g class="elabel"><rect x="226" y="192" width="20" height="16" fill="#ffffff" /><text x="228" y="204">是</text></g>
+                    <g class="elabel"><rect x="388" y="410" width="24" height="16" fill="#ffffff" /><text x="400" y="422" text-anchor="middle">是</text></g>
+                    <g class="elabel"><rect x="226" y="484" width="20" height="16" fill="#ffffff" /><text x="228" y="496">否</text></g>
+                    <g class="elabel"><rect x="226" y="580" width="96" height="16" fill="#ffffff" /><text x="228" y="592" class="sm">GitHub 更新了</text></g>
+                    <g class="elabel"><rect x="44" y="338" width="54" height="16" fill="#ffffff" /><text x="46" y="350" class="sm">回到起點</text></g>
+                    <!-- 節點 -->
+                    <g class="node" data-id="s1" data-kind="start" data-title="Claude 回答完一輪" transform="translate(100,20)">
+                      <rect class="box" width="240" height="48" rx="24" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="120" y="29" class="n" text-anchor="middle">Claude 回答完一輪</text>
+                    </g>
+                    <g class="node" data-id="s2" data-kind="decision" data-title="進度檔有改動嗎" transform="translate(0,0)">
+                      <polygon class="box" points="100,140 220,100 340,140 220,180" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="220" y="136" class="n" text-anchor="middle">進度檔有改動嗎</text>
+                      <text x="220" y="154" class="sm" text-anchor="middle">progress.md、handoff.md</text>
+                    </g>
+                    <g class="node" data-id="s3" data-kind="end" data-title="靜靜結束" transform="translate(460,116)">
+                      <rect class="box" width="240" height="48" rx="24" fill="#f2f2f2" stroke="#111111" stroke-width="1.5" />
+                      <text x="120" y="29" class="n" text-anchor="middle">靜靜結束，不產生 commit</text>
+                    </g>
+                    <g class="node" data-id="s4" data-kind="action" data-title="git commit" transform="translate(100,220)">
+                      <rect class="box" width="240" height="56" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="24" class="n">git commit</text>
+                      <text x="16" y="42" class="sm">先在本機存成一版</text>
+                    </g>
+                    <g class="node" data-id="s5" data-kind="action" data-title="git pull --rebase" transform="translate(100,316)">
+                      <rect class="box" width="240" height="56" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="24" class="n">git pull --rebase</text>
+                      <text x="16" y="42" class="sm">把別台推上去的版本接進來</text>
+                    </g>
+                    <g class="node" data-id="s6" data-kind="decision" data-title="撞到衝突嗎" transform="translate(0,0)">
+                      <polygon class="box" points="100,432 220,392 340,432 220,472" fill="#ffffff" stroke="#111111" stroke-width="1.5" />
+                      <text x="220" y="428" class="n" text-anchor="middle">撞到衝突嗎</text>
+                      <text x="220" y="446" class="sm" text-anchor="middle">兩台改了同一行</text>
+                    </g>
+                    <g class="node" data-id="s7" data-kind="end" data-title="停下來" transform="translate(460,408)">
+                      <rect class="box" width="240" height="48" rx="24" fill="#ffffff" stroke="#da291c" stroke-width="1.5" />
+                      <text x="120" y="22" class="n" text-anchor="middle" fill="#da291c">停下來，不推</text>
+                      <text x="120" y="38" class="sm" text-anchor="middle">下次開 session 時請 Claude 解</text>
+                    </g>
+                    <g class="node" data-id="s8" data-kind="action" data-title="git push" transform="translate(100,512)">
+                      <rect class="box" width="240" height="56" fill="#111111" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="24" class="n inv">git push</text>
+                      <text x="16" y="42" class="inv">推上 GitHub</text>
+                    </g>
+                    <g class="node" data-id="s9" data-kind="external" data-title="另一台機器開 session" transform="translate(100,608)">
+                      <rect class="box" width="240" height="56" fill="#f2f2f2" stroke="#111111" stroke-width="1.5" />
+                      <text x="16" y="24" class="n">另一台機器開 session</text>
+                      <text x="16" y="42" class="sm">SessionStart hook 先 git pull</text>
+                    </g>
+                  </svg>
+                </div>
+                <p class="figcap">
+                  「有改動才繼續」是整條流程的安全閥，因為 Stop hook 每一輪回答都會觸發。
+                  先 commit 再 pull 是故意的：自己的改動先存成一版，接別台的版本時才有東西可以疊上去。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 05 常見誤解 ════════ -->
+      <section id="myth">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">05</div>
+              <h2>最容易想錯的四件事</h2>
+              <p class="sub muted">這四個是討論過程中真的冒出來過的念頭。</p>
+            </div>
+            <div class="sec-main">
+              <div class="myth-list">
+                <div class="myth">
+                  <div class="m-wrong">
+                    <div class="h">你可能以為</div>
+                    <div class="body">「直接用 iCloud 資料夾，就不用搞 git 了。」</div>
+                  </div>
+                  <div class="m-right">
+                    <div class="h">其實</div>
+                    <div class="body">iCloud 只解決「兩台 Mac 看到同一份檔案」。Groq bot 掛不到 iCloud，儀表板讀不到 iCloud，雲端 session 也看不到。而且 iCloud 遇到衝突不會告訴你，只會默默多出一個「progress 2.md」。iCloud 適合放影片、圖片這類大檔，不適合當進度的真相。</div>
+                  </div>
+                </div>
+                <div class="myth">
+                  <div class="m-wrong">
+                    <div class="h">你可能以為</div>
+                    <div class="body">「Stop hook 是整個 session 結束時才跑一次。」</div>
+                  </div>
+                  <div class="m-right">
+                    <div class="h">其實</div>
+                    <div class="body">Claude 每回答完一輪就觸發一次。一個 session 聊二十輪，它就跑二十次。所以 sync.sh 第一件事是檢查有沒有改動，沒有就靜靜結束，不會製造二十個空 commit。</div>
+                  </div>
+                </div>
+                <div class="myth">
+                  <div class="m-wrong">
+                    <div class="h">你可能以為</div>
+                    <div class="body">「把進度寫進 CLAUDE.md 最保險，反正每次都會讀。」</div>
+                  </div>
+                  <div class="m-right">
+                    <div class="h">其實</div>
+                    <div class="body">CLAUDE.md 放的是規則，很少改。狀態要放 handoff.md，用 @handoff.md 那一行匯進來，效果一樣是每次都讀到。把狀態混進規則檔，是這類系統最常見的失控來源，規則會越寫越長、越來越沒人敢動。</div>
+                  </div>
+                </div>
+                <div class="myth">
+                  <div class="m-wrong">
+                    <div class="h">你可能以為</div>
+                    <div class="body">「要在每台電腦手動建一樣的資料夾結構。」</div>
+                  </div>
+                  <div class="m-right">
+                    <div class="h">其實</div>
+                    <div class="body">git clone 下來，倉庫裡的結構就自動一模一樣。你唯一要自己決定並保持一致的，只有倉庫放在哪個路徑，建議三台都放 ~/Project/Baton/。刻意不一樣的只有三樣：機器層的 CLAUDE.md、被忽略的大檔資料夾、大型程式碼倉庫的位置。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 06 邊界 ════════ -->
+      <section id="bound">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">06</div>
+              <h2>什麼時候會卡住</h2>
+              <p class="sub muted">知道邊界比知道機制重要，不然會套到不該套的地方。</p>
+            </div>
+            <div class="sec-main">
+              <div class="bound-list">
+                <div class="bound">
+                  <span class="ico">06.1</span>
+                  <div><b>同一個專案，兩台機器同時改</b></div>
+                  <span class="why">兩邊都改寫 handoff.md 再推，後推的那台會在 pull 時撞到衝突，流程停住、不會推上去。解法是交接單裡的 owner 欄位：儀表板顯示現在誰在做，同一專案同時只在一台機器上動。</span>
+                </div>
+                <div class="bound">
+                  <span class="ico">06.2</span>
+                  <div><b>Groq bot 主機只放行 HTTPS，也沒有路連回 Mac</b></div>
+                  <span class="why">那台是 Grok Bot app 配給 bot 的雲端 Linux，出口代理擋掉所有 SSH，部署金鑰用不了，GitHub 得走 HTTPS 加一個只給 Baton 的 fine-grained token（存在 bot 的加密欄位）。它也連不到 Mac，倉庫只能從 GitHub clone，不能從 mini 複製。bot 若不經 claude CLI 直接改檔，要自己做「開工 pull、收工 sync.sh」。</span>
+                </div>
+                <div class="bound">
+                  <span class="ico">06.3</span>
+                  <div><b>影片、圖片、大型匯出檔</b></div>
+                  <span class="why">這些不該進 git，倉庫會越來越肥、clone 越來越慢。放 iCloud 或 Drive，文件裡放路徑或連結就好。</span>
+                </div>
+                <div class="bound">
+                  <span class="ico">06.4</span>
+                  <div><b>大型程式碼專案</b></div>
+                  <span class="why">有自己的建置流程、很多檔案的專案，另開倉庫。中樞只放它的三個控制檔，用 @ 匯入那一行把兩邊接起來，在哪邊開 session 都讀得到交接單。</span>
+                </div>
+                <div class="bound">
+                  <span class="ico">06.5</span>
+                  <div><b>雲端的 Claude session</b></div>
+                  <span class="why">像現在這個 session 沒有你的硬碟，只看得到有加進環境的 GitHub 倉庫。要讓它參與，就把中樞倉庫加進雲端環境，它會走同一套 pull 與 push。</span>
+                </div>
+                <div class="bound">
+                  <span class="ico">06.6</span>
+                  <div><b>現成的開源工具只是零件</b></div>
+                  <span class="why">GitHub 上有人做了 git 同步的交接檔、也有人做了 markdown 看板，但沒有人把「跨機器、網頁可改、三種 AI 都能讀」合起來。可以借零件，儀表板那薄薄一層還是要自己寫。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ 07 深入 ════════ -->
+      <section id="deep">
+        <div class="wrap">
+          <div class="g12">
+            <div class="sec-side">
+              <div class="num">07</div>
+              <h2>要動手時看這裡</h2>
+              <p class="sub muted">主線到上一段就完整了。以下是真的要建的時候才需要的格式、腳本與順序。</p>
+            </div>
+            <div class="sec-main">
+              <div>
+                <details class="reveal">
+                  <summary>handoff.md 交接單的格式<span class="tag">格式</span></summary>
+                  <div class="reveal-body">
+                    <p class="prose">開頭那一段三條橫線夾起來的欄位，就是儀表板的資料來源。下面三段用人話寫，40 行以內。</p>
+                    <pre>---
+project: content-studio
+area: 內容事業
+status: active          # active | paused | someday | done
+owner: mac-mini         # 目前由哪台機器負責
+next: 完成 Ghost 匯出腳本的錯誤處理
+goal: 一句話寫做到什麼算完成   # 完成路徑圖的終點
+due: 2026-11-10
+updated: 2026-11-05T14:20+08:00
+---
+## 現況
+- 最多三條條列，每條一句。儀表板逐條畫出來
+- 下一步裡可用 ### 階段名 分段，完成路徑圖會標出階段
+
+## 下一步
+- [ ] 任務一
+- [ ] 任務二
+
+## 陷阱與注意事項</pre>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>progress.md 流水帳每一段的格式<span class="tag">格式</span></summary>
+                  <div class="reveal-body">
+                    <p class="prose">只往後追加。標題行寫日期時間、機器代號、用的是哪個工具。機器代號來自機器層的 CLAUDE.md。上個月以前的段落由 sync.sh 自動搬到 progress/YYYY-MM.md（roll-progress.py，兩台同時跑結果一樣），不要手動搬。儀表板依日收合，只展開最新一天。</p>
+                    <pre>## 2026-11-05 14:20 · mac-mini · Claude App
+- 完成了什麼
+- 卡在哪裡
+- 改了哪些檔案</pre>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>hooks 設定，每台機器放一次<span class="tag">腳本</span></summary>
+                  <div class="reveal-body">
+                    <p class="prose">放在每台機器的 ~/.claude/settings.json，三台內容一樣。這樣不管在哪個資料夾開 session，連獨立的程式碼倉庫也一樣，都會先拉中樞、做完推中樞。專案層的 .claude/settings.json 只在啟動的那個資料夾生效，不會往上找，所以不要把 hooks 放在中樞根目錄。</p>
+                    <pre>{
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command",
+      "command": "git -C \"$HOME/Project/Baton\" pull --rebase --autostash -q || true"}]}],
+    "Stop": [{"hooks": [{"type": "command",
+      "command": "\"$HOME/Project/Baton/scripts/sync.sh\""}]}]
+  }
+}</pre>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>sync.sh 本體，只有六行<span class="tag">腳本</span></summary>
+                  <div class="reveal-body">
+                    <p class="prose">固定對中樞倉庫動作，不管 session 開在哪。第三行是安全閥：沒有改動就直接結束。第五行先 pull 再 push，撞到衝突時 pull 會失敗，整行就停在那裡，不會推。</p>
+                    <pre>#!/usr/bin/env bash
+cd "$HOME/Project/Baton" || exit 0
+git add -A
+git diff --cached --quiet &amp;&amp; exit 0
+git commit -qm "progress: $(hostname -s) $(date +%Y-%m-%dT%H:%M)"
+git pull --rebase --autostash -q &amp;&amp; git push -q</pre>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>儀表板現在長這樣<span class="tag">儀表板</span></summary>
+                  <div class="reveal-body">
+                    <ol class="plain">
+                      <li><strong>入口頁 baton.atticus.tw。</strong>一個網域放多個儀表板，dashboards.js 是登錄表；整個 dashboard/ 資料夾由 GitHub Actions 推到公開倉庫 baton-dashboard，用它的 GitHub Pages 發布。</li>
+                      <li><strong>專案儀表板 /projects/。</strong>版型照 Things：今天、即將、隨時、某天、記錄簿、全部專案。專案頁有「完成路徑」圖：下一步的勾選框依序排成一條路，終點是 goal，### 子標題變成階段。現況條列、陷阱收合、流水帳依日收合。</li>
+                      <li><strong>寫回兩條路。</strong>勾選框：瀏覽器裡的 fine-grained token（只給 Baton 的 Contents 與 Issues 讀寫）直接改 handoff.md 那一行，一個 commit。輸入列：開一張 claude 標籤的 Issue，claude-task.yml 用 Claude Code 無頭模式改該專案的檔案、commit、回覆並關閉 Issue。</li>
+                    </ol>
+                    <p class="prose">公開網址沒有存取控制，任何專案的 handoff.md 全文與最近 80 段流水帳都看得到，帳號、金額、私人資訊不要寫。</p>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>現有專案怎麼搬進來<span class="tag">遷移</span></summary>
+                  <div class="reveal-body">
+                    <ol class="plain">
+                      <li>新專案用 /new-project 指令（或 scripts/new-project.sh），它會建資料夾、三個控制檔、登記 projects.yaml。完整啟動流程在 baton/docs/new-project-flow.md。</li>
+                      <li>既有專案：在它現在的 session 裡請 Claude「把目前狀態依新格式寫成 handoff.md，把既有 progress.md 整理成新格式」，再把 Claude App 的選取資料夾換成 ~/Project/Baton/&lt;專案&gt;。</li>
+                      <li>大型程式碼專案留在自己的倉庫，中樞只放三個控制檔，那邊的 CLAUDE.md 加一行 @~/Project/Baton/&lt;專案&gt;/handoff.md。</li>
+                    </ol>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>三台機器怎麼接上 GitHub<span class="tag">機器</span></summary>
+                  <div class="reveal-body">
+                    <ol class="plain">
+                      <li><strong>每台都一樣的部分：</strong>clone 到 ~/Project/Baton，跑 scripts/install.sh &lt;本機代號&gt;。它把 hooks 合進 ~/.claude/settings.json、在 ~/.claude/CLAUDE.md 加本機區塊、連結 /wrap 與 /new-project、把代號寫進 ~/.config/baton/machine。</li>
+                      <li><strong>Mac mini：</strong>HTTPS，靠 gh 當 credential helper。</li>
+                      <li><strong>MacBook Air：</strong>專用 SSH 金鑰 ~/.ssh/id_ed25519_baton 加為倉庫的可寫入部署金鑰，ssh 別名 github-baton，remote 是 git@github-baton:atticuswu/Baton.git。</li>
+                      <li><strong>Groq bot 主機：</strong>HTTPS，fine-grained token 存進 credential helper；bot 收到指示後自己 clone、跑 install.sh groq-bot。</li>
+                      <li><strong>驗 hooks：</strong>Claude App 裡沒有 /hooks，用無頭 CLI：cd ~/Project/Baton/&lt;專案&gt; 後跑 claude -p "只回覆 OK" --output-format stream-json --verbose --include-hook-events，看 SessionStart 與 Stop 的 hook_started／hook_response。在 Mac 上要在本機終端機跑，SSH 進去讀不到鑰匙圈裡的登入。</li>
+                    </ol>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>可以借的現成零件<span class="tag">開源</span></summary>
+                  <div class="reveal-body">
+                    <p class="prose">都是個人作品，星數不高，用之前先看最近一次更新。帶對話內容的工具不要放進同步倉庫。</p>
+                    <div class="tbl-wrap">
+                      <table>
+                        <colgroup>
+                          <col style="width: 34%" />
+                          <col style="width: 33%" />
+                          <col style="width: 33%" />
+                        </colgroup>
+                        <thead>
+                          <tr><th>專案</th><th>能借什麼</th><th>缺什麼</th></tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><a href="https://github.com/briansmith80/claude-handoff">briansmith80 / claude-handoff</a></td>
+                            <td>/handoff 與 /catchup 兩個指令，把 session 濃縮成交接檔再 push</td>
+                            <td>沒有儀表板、沒有多專案總覽</td>
+                          </tr>
+                          <tr>
+                            <td><a href="https://github.com/antopolskiy/kanban-md">antopolskiy / kanban-md</a></td>
+                            <td>一個任務一個 md 檔，有指令列工具和 Claude skill</td>
+                            <td>沒有網頁介面</td>
+                          </tr>
+                          <tr>
+                            <td><a href="https://github.com/SaM-runtime/claude-console">SaM-runtime / claude-console</a></td>
+                            <td>多專案卡片與六階段流程的版面可以參考</td>
+                            <td>只在本機跑，不跨機器</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+                <details class="reveal">
+                  <summary>做到哪、還剩什麼<span class="tag">進度</span></summary>
+                  <div class="reveal-body">
+                    <ol class="plain">
+                      <li>中樞倉庫、hooks、sync.sh、/wrap、/new-project、流水帳歸檔：完成。</li>
+                      <li>三台機器各 clone、install、跑一輪接力：11/07 完成，三個方向都驗過。</li>
+                      <li>儀表板入口頁、專案頁完成路徑、兩條寫回路：完成並實戰驗證。</li>
+                      <li>剩下：搬 content-studio、貓下去、all-invest 進來；儀表板權限（要保護得換託管，如 Cloudflare Pages + Access）。</li>
+                    </ol>
+                    <p class="prose">即時的現況永遠看 baton/handoff.md，這一頁只講做法，不追狀態。</p>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <footer class="foot">
+          <span>Baton 接力棒 AI 管理工具 · 2026-11-07</span>
+          <a href="#top">回頂部</a>
+        </footer>
+      </div>
+    </main>
+
+    <!-- ════════ 底部回傳列 ════════ -->
+    <footer class="bar" data-tw-lock>
+      <div class="wrap">
+        <div class="bar-in">
+          <span class="bar-msg">反白任何一段文字就能留言 · 已留 <span id="bar-count">0</span> 則</span>
+          <button class="btn" id="preview-btn">預覽</button>
+          <button class="btn primary" id="copy-btn">複製給 AI</button>
+        </div>
+        <div class="drawer" id="preview-area">
+          <div class="drawer-head">
+            <span class="label muted">會複製的內容</span>
+            <button class="btn" id="preview-close">關閉</button>
+          </div>
+          <pre id="preview-content"></pre>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 共用複製工具 -->
+    <script>
+      window.vtCopyText = async function (text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (err) {}
+        }
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        try {
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          return document.execCommand("copy") === true;
+        } catch (err) {
+          return false;
+        } finally {
+          ta.remove();
+        }
+      };
+      window.vtSelectForManualCopy = function (text, target, wrap) {
+        let node = target;
+        if (node) {
+          node.textContent = text;
+          if (wrap) wrap.classList.add("open");
+        } else {
+          node = document.getElementById("vt-manual-copy-box");
+          if (!node) {
+            node = document.createElement("pre");
+            node.id = "vt-manual-copy-box";
+            node.title = "雙擊關閉";
+            node.style.cssText =
+              "position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:10000;" +
+              "max-width:min(720px,92vw);max-height:40vh;overflow:auto;white-space:pre-wrap;" +
+              "background:#fff;color:#111;border:1px solid #111;padding:14px 16px;font-size:12.5px;line-height:1.6";
+            node.addEventListener("dblclick", function () {
+              node.remove();
+            });
+            document.body.appendChild(node);
+          }
+          node.textContent = text;
+        }
+        node.scrollIntoView({ block: "nearest" });
+        const sel = window.getSelection();
+        if (sel) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        return node;
+      };
+    </script>
+
+    <!-- 全頁評論系統 -->
+    <button class="vt-comment-trigger" id="vt-comment-trigger">留言</button>
+    <div class="vt-comment-popup" id="vt-comment-popup">
+      <div class="quote" id="vt-popup-quote"></div>
+      <textarea id="vt-popup-textarea" placeholder="對這段文字的評論、疑問或補充"></textarea>
+      <div class="actions">
+        <span class="hint">Cmd + Enter 送出 · Esc 取消</span>
+        <div>
+          <button class="cancel" id="vt-popup-cancel">取消</button><button class="send" id="vt-popup-send">送出</button>
+        </div>
+      </div>
+    </div>
+    <button class="vt-comment-pill" id="vt-comment-pill">留言 <strong id="vt-count">0</strong></button>
+    <div class="vt-comment-list" id="vt-comment-list">
+      <div class="vt-comment-list-header">我的留言</div>
+      <div class="vt-comment-list-items" id="vt-comment-list-items"></div>
+      <div class="vt-comment-list-footer">
+        <button id="vt-clear-all">全部清除</button>
+        <button class="copy" id="vt-copy-fallback">複製留言</button>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const S = "vt-comments-" + location.pathname,
+          L = 80;
+        let c = JSON.parse(localStorage.getItem(S) || "[]"),
+          sel = null;
+        const $ = (i) => document.getElementById(i),
+          tr = $("vt-comment-trigger"),
+          p = $("vt-comment-popup"),
+          pq = $("vt-popup-quote"),
+          pt = $("vt-popup-textarea"),
+          pi = $("vt-comment-pill"),
+          ce = $("vt-count"),
+          le = $("vt-comment-list"),
+          li = $("vt-comment-list-items"),
+          barCount = $("bar-count");
+        window.vtCollectComments = function () {
+          if (!c.length) return "";
+          return (
+            "\n\n---\n\n" +
+            c
+              .map((x) => {
+                const q = x.quote.length > L ? x.quote.slice(0, L) + "…" : x.quote;
+                return "@評論「" + q + "」\n  → " + x.body;
+              })
+              .join("\n\n")
+          );
+        };
+        function hs(e) {
+          if (
+            e.target.closest(
+              ".vt-comment-popup,.vt-comment-trigger,.vt-comment-pill,.vt-comment-list,button,input,select,textarea,.bar",
+            )
+          )
+            return;
+          setTimeout(() => {
+            const s = getSelection(),
+              t = s.toString().trim();
+            if (!t || t.length < 2) {
+              tr.style.display = "none";
+              return;
+            }
+            const r = s.getRangeAt(0),
+              b = r.getBoundingClientRect();
+            sel = { text: t, range: r.cloneRange() };
+            tr.style.display = "inline-flex";
+            tr.style.top = Math.max(8, b.top - 38) + "px";
+            tr.style.left = Math.max(8, b.left + b.width / 2 - 40) + "px";
+          }, 10);
+        }
+        document.addEventListener("mouseup", hs);
+        document.addEventListener("touchend", hs);
+        tr.addEventListener("click", op);
+        function op() {
+          if (!sel) return;
+          const q = sel.text.length > L ? sel.text.slice(0, L) + "…" : sel.text;
+          pq.textContent = q;
+          pt.value = "";
+          const t = tr.getBoundingClientRect();
+          let l = t.left;
+          if (l + 340 > innerWidth - 16) l = innerWidth - 356;
+          let to = t.bottom + 6;
+          if (to + 220 > innerHeight) to = t.top - 230;
+          p.style.left = Math.max(8, l) + "px";
+          p.style.top = Math.max(8, to) + "px";
+          tr.style.display = "none";
+          p.style.display = "block";
+          setTimeout(() => pt.focus(), 50);
+        }
+        $("vt-popup-cancel").addEventListener("click", cp);
+        $("vt-popup-send").addEventListener("click", sc);
+        pt.addEventListener("keydown", (e) => {
+          if (e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            e.stopPropagation();
+            sc();
+          }
+          if (e.key === "Escape") cp();
+        });
+        function cp() {
+          p.style.display = "none";
+          sel = null;
+        }
+        function sc() {
+          const b = pt.value.trim();
+          if (!b || !sel) return cp();
+          const id = "c-" + Date.now(),
+            q = sel.text;
+          try {
+            const m = document.createElement("mark");
+            m.className = "vt-comment-mark";
+            m.dataset.commentId = id;
+            sel.range.surroundContents(m);
+          } catch (e) {}
+          c.push({ id, quote: q, body: b, ts: Date.now() });
+          ps();
+          rn();
+          cp();
+          getSelection().removeAllRanges();
+        }
+        function ps() {
+          localStorage.setItem(S, JSON.stringify(c));
+        }
+        function rn() {
+          ce.textContent = c.length;
+          if (barCount) barCount.textContent = c.length;
+          pi.classList.toggle("is-active", c.length > 0);
+          if (!c.length) le.classList.remove("is-open");
+          li.innerHTML = c
+            .map((x) => {
+              const q = x.quote.length > 60 ? x.quote.slice(0, 60) + "…" : x.quote;
+              return (
+                '<div class="vt-comment-item" data-id="' + x.id + '"><div class="item-quote">「' + eh(q) +
+                '」</div><div class="item-body">' + eh(x.body) + '</div><button class="item-del" data-del="' + x.id +
+                '">刪除</button></div>'
+              );
+            })
+            .join("");
+          li.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => dc(b.dataset.del)));
+        }
+        function dc(id) {
+          c = c.filter((x) => x.id !== id);
+          document.querySelectorAll('mark.vt-comment-mark[data-comment-id="' + id + '"]').forEach((m) => {
+            const pr = m.parentNode;
+            while (m.firstChild) pr.insertBefore(m.firstChild, m);
+            pr.removeChild(m);
+            pr.normalize();
+          });
+          ps();
+          rn();
+        }
+        function eh(s) {
+          return String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+        }
+        pi.addEventListener("click", () => le.classList.toggle("is-open"));
+        $("vt-clear-all").addEventListener("click", () => {
+          if (!c.length) return;
+          if (!confirm("確定清除全部 " + c.length + " 則留言？")) return;
+          document.querySelectorAll("mark.vt-comment-mark").forEach((m) => {
+            const pr = m.parentNode;
+            while (m.firstChild) pr.insertBefore(m.firstChild, m);
+            pr.removeChild(m);
+            pr.normalize();
+          });
+          c = [];
+          ps();
+          rn();
+        });
+        $("vt-copy-fallback").addEventListener("click", async (e) => {
+          if (!c.length) return;
+          const t = window.vtCollectComments().replace(/^\n\n---\n\n/, ""),
+            b = e.currentTarget,
+            o = b.textContent;
+          const ok = await window.vtCopyText(t);
+          if (ok) {
+            b.textContent = "已複製";
+          } else {
+            window.vtSelectForManualCopy(t);
+            b.textContent = "已選取，請按 Cmd+C";
+          }
+          setTimeout(() => (b.textContent = o), ok ? 2000 : 6000);
+        });
+        setTimeout(() => {
+          if (typeof window.vtBuildDecisionExport === "function") document.body.classList.add("vt-has-existing-export");
+        }, 100);
+        document.addEventListener("click", (e) => {
+          if (p.style.display === "block" && !e.target.closest(".vt-comment-popup,.vt-comment-trigger")) cp();
+        });
+        rn();
+      })();
+    </script>
+
+    <!-- 底部回傳列的行為 -->
+    <script>
+      (function () {
+        const area = document.getElementById("preview-area");
+        const content = document.getElementById("preview-content");
+        const previewBtn = document.getElementById("preview-btn");
+        const closeBtn = document.getElementById("preview-close");
+        const copyBtn = document.getElementById("copy-btn");
+        if (!area || !content || !previewBtn || !copyBtn) return;
+        function buildExport() {
+          const comments = typeof window.vtCollectComments === "function" ? window.vtCollectComments() : "";
+          const head = "頁面：" + document.title.replace(/^.*? · /, "") + "\n";
+          if (!comments) return head + "（還沒有留言。反白任何一段文字就能留言。）";
+          return head + comments.replace(/^\n\n---\n\n/, "\n");
+        }
+        window.vtBuildDecisionExport = buildExport;
+        previewBtn.addEventListener("click", () => {
+          content.textContent = buildExport();
+          area.classList.toggle("open");
+        });
+        if (closeBtn) closeBtn.addEventListener("click", () => area.classList.remove("open"));
+        copyBtn.addEventListener("click", async () => {
+          const text = buildExport();
+          const o = copyBtn.textContent;
+          const ok = await window.vtCopyText(text);
+          if (ok) {
+            copyBtn.textContent = "已複製";
+          } else {
+            window.vtSelectForManualCopy(text, content, area);
+            copyBtn.textContent = "已選取，請按 Cmd+C";
+          }
+          setTimeout(() => (copyBtn.textContent = o), ok ? 2000 : 6000);
+        });
+        // 底部列實際高度讓錨點與 Tab 不被蓋住
+        const bar = document.querySelector(".bar");
+        function pad() {
+          document.documentElement.style.scrollPaddingBottom = (bar ? bar.offsetHeight + 16 : 0) + "px";
+        }
+        pad();
+        window.addEventListener("resize", pad);
+      })();
+    </script>
+
+    <!-- Session 識別 -->
+    <script>
+      window.VT_SESSION = { label: "Baton · 2026-11-07", id: "", project: "baton", color: "#da291c" }; // 公開頁：只顯示版本標記，顏色用頁面的紅
+    </script>
+    <style>
+      .vt-session-badge {
+        display: flex;
+        align-items: center;
+        gap: calc(9px * var(--dens, 1));
+        padding: calc(5px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        background: var(--vt-session-color, #666);
+        color: #fff;
+        font-family: var(--mono, ui-monospace, monospace);
+        font-size: calc(11.5px * var(--fs, 1));
+        letter-spacing: 0.06em;
+      }
+      .vt-session-badge .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #fff;
+        opacity: 0.85;
+        flex-shrink: 0;
+      }
+      .vt-session-badge .lb {
+        font-weight: 700;
+      }
+      .vt-session-badge .id {
+        margin-left: auto;
+        opacity: 0.75;
+      }
+    </style>
+    <script>
+      (function () {
+        const s = window.VT_SESSION || {};
+        if (!s.label) return;
+        const seed = s.id || s.label;
+        let hue = 7;
+        for (const c of seed) hue = (hue * 31 + c.charCodeAt(0)) % 360;
+        const col = s.color || "hsl(" + hue + " 58% 42%)";
+        if (!s.color) document.title = s.label + " · " + document.title;
+        try {
+          const cv = document.createElement("canvas");
+          cv.width = cv.height = 64;
+          const g = cv.getContext("2d");
+          g.fillStyle = col;
+          g.fillRect(2, 2, 60, 60);
+          g.fillStyle = "#fff";
+          g.font = '700 38px ui-sans-serif, system-ui, "PingFang TC"';
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+          const ch = (s.label.match(/[A-Za-z0-9一-鿿]/) || ["?"])[0];
+          g.fillText(ch.toUpperCase(), 32, 36);
+          const link = document.createElement("link");
+          link.rel = "icon";
+          link.href = cv.toDataURL();
+          document.head.appendChild(link);
+        } catch (e) {}
+        const b = document.createElement("div");
+        b.className = "vt-session-badge";
+        b.style.setProperty("--vt-session-color", col);
+        b.innerHTML = '<span class="dot"></span><span class="lb"></span><span class="id"></span>';
+        b.querySelector(".lb").textContent = s.label;
+        b.querySelector(".id").textContent = s.id || "";
+        const host = document.querySelector("header") || document.body;
+        host.insertBefore(b, host.firstChild);
+      })();
+    </script>
+  <!-- vt-tweaks:begin v=c10c74fa98 -->
+<style id="vt-tweaks-css">
+/* 風格設定面板 — 與 tweaks.js 成對，由 scripts/stamp.py 在 verify 時注入頁尾（作者不用複製）。
+   字級與間距的倍率靠兩個變數：--fs（字級）、--dens（間距）。stamp.py 會把頁面裡寫死的
+   px 字級與間距改成 calc(原值 * var(--fs|--dens, 1))，這裡只負責「哪些區塊不吃倍率」。 */
+
+/* 不吃倍率：結構圖、畫面樣張（它們是示意畫面，照比例縮放才對）、頁面介面本身
+   （風格設定面板、評論工具、session 徽章；字放到 200% 時還得能把它調回來）、作者手動鎖定的區塊。
+   ⚠️ 要逐一列出，不能用「class 以 vt- 開頭」：評論工具會在 body 加 vt-has-existing-export，
+   前綴比對會把整頁鎖死；被評論標記的文字（vt-comment-mark）也該跟著內文縮放。 */
+svg,
+.mock,
+[data-tw-lock],
+.vt-tw-root,
+.vt-comment-trigger,
+.vt-comment-popup,
+.vt-comment-pill,
+.vt-comment-list,
+.vt-session-badge {
+  --fs: 1;
+  --dens: 1;
+}
+/* 沒宣告字級的頁面（spec-alignment 範本就是）：零權重，任何頁面規則都蓋得過它 */
+:where(body) {
+  font-size: calc(16px * var(--fs, 1));
+}
+/* Tailwind 文字 class 的覆寫由 stamp.py 視頁面需要產生（只在有 Tailwind、倍率≠1 時生效），不放這裡 */
+
+/* ── 面板本體（按鈕與面板都掛 vt-tw-root → 在上面的排除清單裡，不吃倍率）── */
+/* 沒有底部列可停的頁：浮在左下角（右下角是評論工具） */
+.vt-tw-launch {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  gap: calc(5px * var(--dens, 1));
+  font: 600 calc(12px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(5px * var(--dens, 1)) calc(10px * var(--dens, 1));
+  border-radius: 999px;
+  border: 1.5px solid var(--slate, #141413);
+  background: var(--slate, #141413);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(20, 20, 19, 0.2);
+}
+.vt-tw-launch svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+/* 停在底部列「預覽摘要」左邊：外觀跟旁邊的次要按鈕一致，各寬度都停（窄螢幕只顯示圖示，見檔尾） */
+.vt-tw-launch.vt-tw-docked {
+  position: static;
+  display: inline-flex; /* 父層是一般區塊時才不會獨佔一行、把列撐高 */
+  font: 500 calc(14px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1));
+  border-radius: 10px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--slate, #141413);
+  box-shadow: none;
+}
+.vt-tw-launch.vt-tw-docked:hover {
+  border-color: var(--slate, #141413);
+}
+/* 位置（bottom、left／right、max-height）由 tweaks.js 依按鈕位置算 */
+.vt-tw-pop {
+  position: fixed;
+  width: min(330px, 92vw);
+  overflow: auto;
+  z-index: 9100;
+  background: #fff;
+  color: var(--slate, #141413);
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 12px;
+  box-shadow: 0 16px 44px rgba(20, 20, 19, 0.22);
+  padding: calc(14px * var(--dens, 1)) calc(16px * var(--dens, 1)) calc(16px * var(--dens, 1));
+  font: calc(13px * var(--fs, 1))/1.5 var(--sans, system-ui, sans-serif);
+  text-align: left;
+}
+.vt-tw-pop[hidden] {
+  display: none;
+}
+.vt-tw-sec {
+  font: 600 calc(10.5px * var(--fs, 1)) var(--mono, ui-monospace, monospace);
+  color: var(--g500, #87867f);
+  letter-spacing: 0.06em;
+  margin: calc(12px * var(--dens, 1)) 0 calc(6px * var(--dens, 1));
+  padding-top: calc(10px * var(--dens, 1));
+  border-top: 1px solid var(--g200, #e6e3da);
+}
+.vt-tw-sec.vt-tw-first {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+/* 中英切換：面板頂端那行的右邊 */
+.vt-tw-lang {
+  font: 600 calc(11px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  letter-spacing: 0;
+  padding: calc(2px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  border-radius: 6px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--g700, #3d3d3a);
+  cursor: pointer;
+}
+.vt-tw-lang:hover {
+  border-color: var(--slate, #141413);
+}
+.vt-tw-item {
+  margin: calc(8px * var(--dens, 1)) 0;
+}
+.vt-tw-label {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(8px * var(--dens, 1));
+  font-weight: 600;
+  margin-bottom: calc(4px * var(--dens, 1));
+}
+.vt-tw-val {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-weight: 500;
+  color: var(--clay-d, #b85c3e);
+}
+.vt-tw-item input[type="range"] {
+  width: 100%;
+  accent-color: var(--clay, #d97757);
+}
+.vt-tw-seg {
+  display: flex;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vt-tw-seg button {
+  flex: 1;
+  font: calc(12.5px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(5px * var(--dens, 1)) calc(4px * var(--dens, 1));
+  border: 0;
+  border-right: 1px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--g700, #3d3d3a);
+  cursor: pointer;
+}
+.vt-tw-seg button:last-child {
+  border-right: 0;
+}
+.vt-tw-seg button.vt-tw-on {
+  background: var(--slate, #141413);
+  color: #fff;
+}
+.vt-tw-hint {
+  font-size: calc(11.5px * var(--fs, 1));
+  color: var(--g500, #87867f);
+  line-height: 1.5;
+  margin-top: calc(5px * var(--dens, 1));
+}
+.vt-tw-actions {
+  display: flex;
+  gap: calc(8px * var(--dens, 1));
+  margin-top: calc(14px * var(--dens, 1));
+}
+.vt-tw-actions button {
+  flex: 1;
+  font: calc(12.5px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(7px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  border-radius: 8px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  cursor: pointer;
+}
+.vt-tw-actions button.vt-tw-pri {
+  border-color: var(--clay, #d97757);
+  color: var(--clay-d, #b85c3e);
+  font-weight: 600;
+}
+.vt-tw-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.vt-tw-manual {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: calc(8px * var(--dens, 1));
+  padding: calc(6px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  font: calc(11px * var(--fs, 1))/1.5 var(--mono, ui-monospace, monospace);
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 8px;
+  resize: vertical;
+}
+.vt-tw-manual[hidden] {
+  display: none;
+}
+.vt-tw-actions button[aria-pressed="true"] {
+  background: var(--clay-d, #b85c3e);
+  border-color: var(--clay-d, #b85c3e);
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .vt-tw-launch {
+    padding: calc(8px * var(--dens, 1));
+  }
+  .vt-tw-lbl {
+    display: none; /* 手機只留圖示，少蓋一點內容 */
+  }
+}
+/* 範本底部列在 900px 以下擠不下帶字的第三顆鈕：只留圖示、縮內距，高度跟旁邊的按鈕拉齊。
+   約 360px 以下、以及 700px 前後一小段寬度，列仍可能折成兩行（範圍依列上的文字與按鈕字數而定；等於更窄螢幕的版型），接受 */
+@media (max-width: 900px) {
+  .vt-tw-docked .vt-tw-lbl {
+    display: none;
+  }
+  .vt-tw-launch.vt-tw-docked {
+    padding: calc(10px * var(--dens, 1)) calc(11px * var(--dens, 1));
+    align-self: stretch;
+  }
+}
+
+</style>
+<script id="vt-tweaks-js" data-profile-tool="$HOME/.claude/skills/synced/b831ae40-444b-4d6d-a3c0-56f8b9a5f120_d6b05904-0ac4-49b6-88f1-b27e3b55fe54/html-visualizer/scripts/profile.py">
+/* 風格設定面板 — 與 tweaks.css 成對，由 scripts/stamp.py 在 verify 時注入頁尾（作者不用複製）。
+ * 按鈕「風格設定」：頁面有範本底部列的「預覽摘要」（#preview-btn）就停在它左邊，各寬度都是（窄螢幕只顯示圖示）；
+ * 沒有底部列就固定在左下角（右下角是評論工具的位置）。面板從按鈕上方打開。
+ * 底部列一律用範本的，按鈕不偵測、不閃避頁面自己做的固定列。
+ * （本檔任何地方都不能出現 script 的結尾標籤字樣，否則內嵌時瀏覽器會在那裡把腳本切斷。）
+ *
+ * 固定層（每頁都有）：字級 90%–200%、密度、內容寬度，寫在 <html> 的 --fs／--dens／--wrap-max。
+ * 內容層（作者選配，預設 0 項）：頁面放一個 type 為 application/json、id 為 vt-tweaks 的 script 區塊，
+ *   內容是 [{id,label,options:[[值,顯示],...],hint}]。
+ * 選了之後在 <html> 設 data-tw-<id>="值"，作者只寫對應的 CSS，不寫 JS。hint 必填（這項會改到頁面上的什麼）。
+ * 調過的值只改畫面、不進複製摘要。讀者按「存成我的預設」才產生「設定檔變更」段落（給 AI 執行的一行
+ * profile.py 指令，使用者不用自己跑）：有拍板摘要的頁經 window.vtCollectComments 接進摘要，沒有的頁直接複製。
+ * 介面有中英兩種，面板頂端可切換（「設定檔變更」段落也跟著換語言）。
+ */
+(function () {
+  var root = document.documentElement;
+  var me = document.currentScript;
+  var tool = (me && me.getAttribute("data-profile-tool")) || "profile.py";
+  // 介面語言：讀者切換過就記在瀏覽器、之後的頁沿用；沒切過跟頁面的 lang 走。
+  // 沙盒 iframe（沒開 allow-same-origin）一碰 localStorage 就丟錯，所以包 try
+  var lang = null;
+  try {
+    lang = localStorage.getItem("vt-tw-lang");
+  } catch (e) {}
+  if (lang !== "zh" && lang !== "en") lang = /^en/i.test(root.lang) ? "en" : "zh";
+  var LANG = {
+    zh: {
+      name: "風格設定",
+      short: "風格設定",
+      title: "風格設定（字級、密度、寬度）",
+      fixed: "固定層 · 每頁都有",
+      content: "內容層 · 這頁專屬",
+      swap: "EN",
+      reset: "全部還原",
+      save: "存成我的預設",
+      added: "已加進複製摘要",
+      copied: "已複製，貼回對話即可",
+      select: "已選取，請按 Cmd+C",
+      need: function (n) {
+        return "調過" + n.slice(0, -1).join("、") + "或" + n[n.length - 1] + "，才能存成你的預設。";
+      },
+      undo: "存檔指令已加進這頁的複製摘要，複製後貼回對話即可；再按一次取消。",
+      toSummary: "按下後，存檔指令會加進這頁的複製摘要；貼回對話，AI 會寫進你的設定檔，之後的頁都用這組。",
+      toCopy: "按下後會複製一段指令；貼回對話，AI 會寫進你的設定檔，之後的頁都用這組。",
+      head: "## 設定檔變更\n給 AI：使用者要把這頁的顯示設定存成預設（",
+      pair: "：",
+      join: "、",
+      tail: "）。請執行下面這行寫入 html-visualizer 設定檔，完成後回報前後差異；使用者不用自己跑。\n",
+    },
+    en: {
+      name: "Style settings",
+      short: "Style",
+      title: "Style settings (text size, density, width)",
+      fixed: "Every page",
+      content: "This page only",
+      swap: "中文",
+      reset: "Reset all",
+      save: "Save as my default",
+      added: "Added to summary",
+      copied: "Copied",
+      select: "Press Cmd+C",
+      need: function (n) {
+        n = n.map(function (x) {
+          return x.toLowerCase();
+        });
+        return "Change the " + n.slice(0, -1).join(", ") + " or " + n[n.length - 1] + " to save it as your default.";
+      },
+      undo: "The save command is in this page's copy summary. Copy the summary and paste it into the chat. Click again to remove it.",
+      toSummary: "Adds a save command to this page's copy summary. Paste it into the chat and the AI writes it to your profile; later pages use these settings.",
+      toCopy: "Copies a save command. Paste it into the chat and the AI writes it to your profile; later pages use these settings.",
+      head: "## Profile changes\nFor the AI: the user wants to save this page's display settings as their default (",
+      pair: ": ",
+      join: ", ",
+      tail: "). Run the line below to write them to the html-visualizer profile, then report the before and after values. The user doesn't need to run it.\n",
+    },
+  };
+  var L = LANG[lang];
+  // 固定層的名稱與選項是 {zh, en}；作者寫的內容層（字串或數字）原樣顯示
+  function txt(x) {
+    return x && typeof x === "object" ? x[lang] : x;
+  }
+  var cs = getComputedStyle(root);
+  function cssNum(name, fallback) {
+    var v = parseFloat(cs.getPropertyValue(name));
+    return isNaN(v) ? fallback : v;
+  }
+  var baseFs = cssNum("--fs", 1);
+  var DENS = [
+    ["0.75", { zh: "緊湊", en: "Compact" }, "compact"],
+    ["1", { zh: "標準", en: "Standard" }, "standard"],
+    ["1.3", { zh: "寬鬆", en: "Relaxed" }, "relaxed"],
+  ];
+  var baseDens = String(cssNum("--dens", 1));
+  if (!DENS.some(function (d) { return d[0] === baseDens; })) baseDens = "1";
+  // 內容寬度只在頁面有用 --wrap-max 時提供（範本在 :root 宣告它）；沒宣告的頁按了也不會動，乾脆不顯示
+  var rawWrap = cs.getPropertyValue("--wrap-max").trim();
+  var baseWrap = parseFloat(rawWrap) || 1760;
+  var wrapOpts = [
+    ["1760px", { zh: "滿版", en: "Full" }, "1760"],
+    ["1080px", { zh: "閱讀寬", en: "Reading" }, "1080"],
+  ];
+  if (baseWrap !== 1760 && baseWrap !== 1080) wrapOpts.unshift([baseWrap + "px", { zh: "預設", en: "Default" }, String(baseWrap)]);
+  var FIXED = [
+    { id: "fs", label: { zh: "字級", en: "Text size" }, kind: "range", min: 0.9, max: 2, step: 0.05, def: String(baseFs), css: "--fs", profile: "tokens.type.scale" },
+    { id: "dens", label: { zh: "密度", en: "Density" }, css: "--dens", def: baseDens, profile: "tokens.layout.density", options: DENS },
+  ];
+  if (rawWrap) {
+    FIXED.push({ id: "width", label: { zh: "內容寬度", en: "Width" }, css: "--wrap-max", def: baseWrap + "px", profile: "tokens.layout.maxWidth", options: wrapOpts });
+  }
+  // html.vt-fs：倍率≠1 時才讓 Tailwind 文字 class 的覆寫生效（stamp.py 產生的規則都掛在它底下）
+  root.classList.toggle("vt-fs", baseFs !== 1);
+  var content = [];
+  // 用 querySelector：沒有內容層的頁面本來就沒有這個元素，不該被 verify 的元素參照檢查報成缺漏
+  var decl = document.querySelector("script#vt-tweaks");
+  if (decl) {
+    try {
+      content = JSON.parse(decl.textContent);
+    } catch (e) {
+      console.error("vt-tweaks 宣告不是合法 JSON", e);
+    }
+  }
+  content = content.filter(function (c) {
+    var ok =
+      c && c.id && c.label && Array.isArray(c.options) && c.options.length >= 2;
+    if (!ok) console.error("vt-tweaks 項目缺 id／label／options", c);
+    else if (!c.hint)
+      console.error(
+        "vt-tweaks 項目缺 hint（要寫這項會改到頁面上的什麼）",
+        c.id,
+      );
+    return ok;
+  });
+  if (content.length > 3) {
+    console.error("vt-tweaks 最多 3 項，多的不顯示");
+    content = content.slice(0, 3);
+  }
+  content.forEach(function (c) {
+    c.attr = "data-tw-" + c.id;
+    c.def = String(c.options[0][0]);
+  });
+  var ALL = FIXED.concat(content);
+  var saved = false; // 按過「存成我的預設」（只在有拍板摘要的頁用得到）
+  var state = {};
+  ALL.forEach(function (t) {
+    state[t.id] = t.def;
+  });
+
+  function label(t, v) {
+    if (t.kind === "range") return Math.round(parseFloat(v) * 100) + "%";
+    for (var i = 0; i < t.options.length; i++)
+      if (String(t.options[i][0]) === v) return txt(t.options[i][1]);
+    return v;
+  }
+  function apply(t) {
+    if (t.css) root.style.setProperty(t.css, state[t.id]);
+    if (t.attr) root.setAttribute(t.attr, state[t.id]);
+    if (t.id === "fs") root.classList.toggle("vt-fs", parseFloat(state.fs) !== 1);
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  // 切換語言時要重寫的文字：登記時先畫一次，切換時全部重跑
+  var paint = [];
+  function painted(fn) {
+    paint.push(fn);
+    fn();
+  }
+  // 頁面自己的介面文字（範本底部列的按鈕等）也跟著換：元素寫 data-en="英文"，原本的中文第一次換掉前先存進 data-zh。
+  // <html data-vt-lang> 給頁面腳本讀，組執行期文字（例如「已複製」）時用
+  painted(function () {
+    root.setAttribute("data-vt-lang", lang);
+    document.querySelectorAll("[data-en]").forEach(function (e) {
+      if (!e.hasAttribute("data-zh")) e.setAttribute("data-zh", e.textContent);
+      e.textContent = e.getAttribute(lang === "en" ? "data-en" : "data-zh");
+    });
+  });
+
+  var launch = el("button", "vt-tw-launch vt-tw-root");
+  launch.type = "button";
+  launch.setAttribute("aria-expanded", "false");
+  launch.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg>';
+  var lbl = launch.appendChild(el("span", "vt-tw-lbl"));
+  var pop = el("aside", "vt-tw-pop vt-tw-root");
+  pop.hidden = true;
+  painted(function () {
+    launch.setAttribute("aria-label", L.name);
+    launch.title = L.title;
+    lbl.textContent = L.short;
+    pop.setAttribute("aria-label", L.name);
+  });
+
+  function control(t) {
+    var wrap = el("div", "vt-tw-item");
+    var lab = el("div", "vt-tw-label");
+    var name = lab.appendChild(el("span"));
+    var val = el("span", "vt-tw-val");
+    lab.appendChild(val);
+    wrap.appendChild(lab);
+    function sync() {
+      val.textContent = label(t, state[t.id]);
+    }
+    if (t.kind === "range") {
+      var r = el("input");
+      r.type = "range";
+      r.min = t.min;
+      r.max = t.max;
+      r.step = t.step;
+      r.value = state[t.id];
+      r.addEventListener("input", function () {
+        state[t.id] = r.value;
+        apply(t);
+        sync();
+        refreshSave();
+      });
+      wrap.appendChild(r);
+      t.reset = function () {
+        r.value = t.def;
+      };
+    } else {
+      var seg = el("div", "vt-tw-seg");
+      t.options.forEach(function (o) {
+        var b = el("button");
+        b.type = "button";
+        painted(function () {
+          b.textContent = txt(o[1]);
+        });
+        b.setAttribute("data-v", String(o[0]));
+        b.addEventListener("click", function () {
+          state[t.id] = String(o[0]);
+          apply(t);
+          mark();
+          sync();
+          refreshSave();
+        });
+        seg.appendChild(b);
+      });
+      function mark() {
+        seg.querySelectorAll("button").forEach(function (b) {
+          b.classList.toggle(
+            "vt-tw-on",
+            b.getAttribute("data-v") === state[t.id],
+          );
+        });
+      }
+      mark();
+      t.reset = mark;
+      wrap.appendChild(seg);
+    }
+    if (t.hint) wrap.appendChild(el("div", "vt-tw-hint", t.hint));
+    t.sync = sync;
+    painted(function () {
+      name.textContent = txt(t.label);
+      if (r) r.setAttribute("aria-label", txt(t.label));
+      sync();
+    });
+    return wrap;
+  }
+  var first = pop.appendChild(el("div", "vt-tw-sec vt-tw-first"));
+  var firstText = first.appendChild(el("span"));
+  var langBtn = first.appendChild(el("button", "vt-tw-lang"));
+  langBtn.type = "button";
+  painted(function () {
+    firstText.textContent = L.fixed;
+    langBtn.textContent = L.swap;
+  });
+  FIXED.forEach(function (t) {
+    pop.appendChild(control(t));
+  });
+  if (content.length) {
+    var sec = pop.appendChild(el("div", "vt-tw-sec"));
+    painted(function () {
+      sec.textContent = L.content;
+    });
+    content.forEach(function (t) {
+      pop.appendChild(control(t));
+    });
+  }
+  var actions = el("div", "vt-tw-actions");
+  var resetBtn = el("button");
+  resetBtn.type = "button";
+  painted(function () {
+    resetBtn.textContent = L.reset;
+  });
+  var saveBtn = el("button", "vt-tw-pri");
+  saveBtn.type = "button";
+  actions.appendChild(resetBtn);
+  actions.appendChild(saveBtn);
+  pop.appendChild(actions);
+  var saveHint = el("div", "vt-tw-hint");
+  pop.appendChild(saveHint);
+  // 複製不到時的出路：指令放進這裡並全選，使用者按 Cmd+C（純展示頁沒有頁面自帶的複製函式）
+  var manual = el("textarea", "vt-tw-manual");
+  manual.readOnly = true;
+  manual.rows = 4;
+  manual.hidden = true;
+  pop.appendChild(manual);
+  var flashTimer = null;
+
+  function changedFixed() {
+    return FIXED.filter(function (t) {
+      return state[t.id] !== t.def;
+    });
+  }
+  function profileValue(t, v) {
+    if (t.options) {
+      for (var i = 0; i < t.options.length; i++)
+        if (String(t.options[i][0]) === v) return t.options[i][2];
+    }
+    return String(Math.round(parseFloat(v) * 100) / 100);
+  }
+  function hasSummary() {
+    return typeof window.vtBuildDecisionExport === "function";
+  }
+  function saveText(ch) {
+    return (
+      L.head +
+      ch
+        .map(function (t) {
+          return txt(t.label) + L.pair + label(t, state[t.id]);
+        })
+        .join(L.join) +
+      L.tail +
+      // 雙引號：路徑以 $HOME 開頭，單引號裡不會展開
+      'python3 "' +
+      tool +
+      '" set ' +
+      ch
+        .map(function (t) {
+          return t.profile + "=" + profileValue(t, state[t.id]);
+        })
+        .join(" ")
+    );
+  }
+  function refreshSave() {
+    var n = changedFixed().length;
+    // 只看目前的值：拖滑桿途中經過預設值那一格不該把已存取消
+    var on = saved && n > 0;
+    // 失敗時留下的文字框：設定一變，裡面的指令就過時了
+    if (!manual.hidden && manual.value !== saveText(changedFixed())) manual.hidden = true;
+    saveBtn.disabled = !n;
+    if (hasSummary()) saveBtn.setAttribute("aria-pressed", String(on));
+    saveBtn.textContent = on ? L.added : L.save;
+    saveHint.textContent = !n
+      ? L.need(FIXED.map(function (t) {
+          return txt(t.label);
+        }))
+      : on
+        ? L.undo
+        : hasSummary()
+        ? L.toSummary
+        : L.toCopy;
+  }
+  window.vtCollectTweaks = function () {
+    var ch = changedFixed();
+    return saved && ch.length ? "\n\n" + saveText(ch) : "";
+  };
+  resetBtn.addEventListener("click", function () {
+    saved = false;
+    ALL.forEach(function (t) {
+      state[t.id] = t.def;
+      apply(t);
+      t.reset();
+      t.sync();
+    });
+    refreshSave();
+  });
+  saveBtn.addEventListener("click", async function () {
+    if (hasSummary()) {
+      saved = !saved;
+      refreshSave();
+      return;
+    }
+    // 沒有拍板摘要的頁：按鈕本身就是出口，直接複製
+    var text = saveText(changedFixed());
+    var ok = false;
+    manual.hidden = true;
+    if (window.vtCopyText) ok = await window.vtCopyText(text);
+    // 沒有頁面的複製函式就直接走下面：在點擊當下同步複製，不先 await 別的 API 把使用者手勢耗掉
+    if (!ok) {
+      manual.value = text;
+      manual.hidden = false;
+      manual.select();
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {}
+      if (ok) manual.hidden = true;
+    }
+    saveBtn.textContent = ok ? L.copied : L.select;
+    clearTimeout(flashTimer); // 連點時舊計時器不能提早蓋掉新回饋
+    flashTimer = setTimeout(refreshSave, ok ? 2000 : 6000);
+  });
+  // 面板開在按鈕上方：按鈕在右半就右緣對齊、左半就左緣對齊；
+  // 按鈕上方不到 200px（視窗矮、底部列展開）就改貼畫面頂端，不讓面板頂端跑出畫面
+  function place() {
+    var r = launch.getBoundingClientRect();
+    var w = Math.min(330, window.innerWidth * 0.92);
+    var x = r.left + r.width / 2 > window.innerWidth / 2 ? r.right - w : r.left;
+    // 預覽鈕在列中間時（非範本的列）對齊邊緣會出界，夾回畫面內
+    pop.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 8)) + "px";
+    var low = r.top - 24 < 200;
+    pop.style.top = low ? "12px" : "auto";
+    pop.style.bottom = low ? "auto" : window.innerHeight - r.top + 10 + "px";
+    pop.style.maxHeight = (low ? window.innerHeight - 24 : r.top - 24) + "px";
+  }
+  langBtn.addEventListener("click", function () {
+    lang = lang === "zh" ? "en" : "zh";
+    L = LANG[lang];
+    try {
+      localStorage.setItem("vt-tw-lang", lang);
+    } catch (e) {}
+    paint.forEach(function (f) {
+      f();
+    });
+    refreshSave();
+  });
+  function setOpen(open) {
+    if (open) place();
+    pop.hidden = !open;
+    launch.setAttribute("aria-expanded", String(open));
+  }
+  launch.addEventListener("click", function () {
+    setOpen(pop.hidden);
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !pop.hidden) setOpen(false);
+  });
+  document.addEventListener("click", function (ev) {
+    // 用事件當下的路徑判斷（按鈕若在點擊後被重畫移除，closest 會找不到而誤關）
+    var inside = ev.composedPath().some(function (el) {
+      return el.classList && el.classList.contains("vt-tw-root");
+    });
+    if (!pop.hidden && !inside) setOpen(false);
+  });
+  // 把「設定檔變更」段接進評論收集函式：所有複製摘要都已經照規定拼接它，不必逐一改寫
+  function hook() {
+    var orig = window.vtCollectComments;
+    window.vtCollectComments = function () {
+      return window.vtCollectTweaks() + (orig ? orig() : "");
+    };
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", hook);
+  else hook();
+  // querySelector：頁面沒有預覽鈕是正常的，不該讓 verify 的元素參照檢查報缺漏（同上方 vt-tweaks 的寫法）
+  var dock = document.querySelector("#preview-btn");
+  document.body.appendChild(pop);
+  if (dock) {
+    launch.classList.add("vt-tw-docked");
+    dock.parentNode.insertBefore(launch, dock);
+  } else document.body.insertBefore(launch, pop); // Tab 順序：按鈕→面板
+  // 縮放、捲動時按鈕會跟著列移動（捲到頁尾，列會被頁尾往上推），開著的面板要跟著對齊
+  function follow() {
+    if (!pop.hidden) place();
+  }
+  window.addEventListener("resize", follow);
+  window.addEventListener("scroll", follow, { passive: true });
+  refreshSave();
+})();
+
+</script>
+<!-- vt-tweaks:end -->
+</body>
+</html>

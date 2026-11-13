@@ -1,0 +1,2862 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baton · 一個專案的目標流程</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --wrap-max: 1760px;
+        --ivory: #f6f4f0; --paper: #fffdfa; --slate: #1d1a16;
+        --clay: #0088cc; --clay-d: #006DA3; --clay-soft: #CCE7F5; --clay-ink: #006DA3;
+        --oat: #eeebe5; --olive: #788c5d; --olive-soft: #eff1e8; --olive-border: #c8d2b8;
+        --g100: #eeebe5; --g200: #e7e3dc; --g300: #ddd8cf; --g500: #6b655d; --g700: #4f4a43;
+        --green: #788c5d; --green-soft: #eff1e8; --green-border: #c8d2b8; --green-ink: #46552f;
+        --red: #006DA3; --red-soft: #F0F8FC; --red-border: #A9D6EE;
+        --yellow: #0088cc; --yellow-soft: #F0F8FC; --yellow-border: #A9D6EE; --yellow-ink: #4f4a43;
+        --bg: var(--ivory); --bg-card: var(--paper); --bg-soft: var(--g100); --bg-soft-2: var(--g200);
+        --border: var(--g300); --border-strong: var(--g500);
+        --text: var(--slate); --text-muted: #4f4a43; --text-soft: #6b655d;
+        --accent: var(--clay); --accent-soft: var(--clay-soft); --accent-strong: var(--clay-d);
+        --line: rgba(29, 26, 22, 0.11); --line-strong: rgba(29, 26, 22, 0.2);
+        --serif: "Instrument Serif", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", serif;
+        --sans: "DM Sans", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", -apple-system, BlinkMacSystemFont, sans-serif;
+        --mono: ui-monospace, "SFMono-Regular", "SF Mono", Consolas, monospace;
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; background: var(--ivory); color: var(--slate); font-family: var(--sans); font-size: calc(16px * var(--fs, 1)); line-height: 1.6; -webkit-font-smoothing: antialiased; font-synthesis: none; }
+      h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; color: var(--slate); letter-spacing: -0.02em; margin: 0; }
+      p, li, td { text-wrap: pretty; }
+      h1, h2, h3 { text-wrap: balance; }
+      h1 em, h2 em, h3 em { font-style: normal; font-weight: 600; color: var(--clay-ink); }
+      h1 .ph, h2 .ph { display: inline-block; }
+      p { max-width: 72ch; }
+      a { color: var(--clay-ink); }
+      .wrap { width: min(94vw, var(--wrap-max, 1760px)); margin: 0 auto; padding: 0 calc(32px * var(--dens, 1)); }
+      .eyebrow { font-family: var(--mono); font-size: calc(11.5px * var(--fs, 1)); letter-spacing: 0.12em; text-transform: uppercase; color: var(--g500); display: flex; align-items: center; gap: calc(12px * var(--dens, 1)); }
+      .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--clay); flex-shrink: 0; }
+      /* 深色首屏（同 build.atticus.tw） */
+      body > header { background: radial-gradient(1200px 520px at 85% -10%, rgba(0,136,204,.22), rgba(0,136,204,0) 60%), #1b1916; color: #fffdfa; }
+      body > header .wrap { padding-top: calc(46px * var(--dens, 1)); padding-bottom: calc(34px * var(--dens, 1)); }
+      body > header h1 { color: #fffdfa; letter-spacing: -0.035em; line-height: 1.12; font-size: calc(clamp(34px, 4.6vw, 56px) * var(--fs, 1)); margin-top: calc(14px * var(--dens, 1)); }
+      body > header h1 em { color: #59B2DE; }
+      body > header .intro { color: rgba(255,253,250,.84); font-size: calc(16.5px * var(--fs, 1)); margin-top: calc(14px * var(--dens, 1)); line-height: 1.7; }
+      body > header .eyebrow { color: #59B2DE; }
+      .toc { display: flex; flex-wrap: wrap; gap: calc(8px * var(--dens, 1)); margin-top: calc(26px * var(--dens, 1)); }
+      .toc a { font-size: calc(13px * var(--fs, 1)); padding: calc(6px * var(--dens, 1)) calc(15px * var(--dens, 1)); border-radius: 4px; text-decoration: none; transition: all .15s; background: rgba(255,253,250,.06); border: 1px solid rgba(255,253,250,.28); color: #fffdfa; }
+      .toc a:hover { background: rgba(255,253,250,.14); }
+      .toc a .n { font-family: var(--mono); font-size: calc(10.5px * var(--fs, 1)); color: #59B2DE; margin-right: calc(6px * var(--dens, 1)); }
+      main .wrap { padding-top: calc(44px * var(--dens, 1)); padding-bottom: calc(20px * var(--dens, 1)); }
+      main > .wrap > section { margin-bottom: calc(56px * var(--dens, 1)); }
+      .sec-head { display: flex; align-items: flex-start; gap: calc(14px * var(--dens, 1)); margin-bottom: calc(20px * var(--dens, 1)); }
+      .sec-idx { font-family: var(--mono); font-size: calc(13px * var(--fs, 1)); font-weight: 600; color: var(--clay-ink); letter-spacing: .06em; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .sec-head h2 { font-size: calc(clamp(30px, 3.4vw, 44px) * var(--fs, 1)); line-height: 1.1; }
+      .sec-sub { font-size: calc(13.5px * var(--fs, 1)); color: var(--g700); margin-top: calc(3px * var(--dens, 1)); max-width: 72ch; }
+      h3 { font-size: calc(18px * var(--fs, 1)); }
+      .card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: calc(16px * var(--dens, 1)) calc(20px * var(--dens, 1)); }
+      .lead { font-size: calc(17px * var(--fs, 1)); line-height: 1.75; color: var(--slate); }
+      .note { font-size: calc(13.5px * var(--fs, 1)); color: var(--text-muted); line-height: 1.65; }
+      .mt { margin-top: calc(24px * var(--dens, 1)); }
+      .mt-s { margin-top: calc(12px * var(--dens, 1)); }
+      .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: calc(16px * var(--dens, 1)); }
+      .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(16px * var(--dens, 1)); }
+      .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(16px * var(--dens, 1)); }
+      @media (max-width: 900px) { .g4 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: 1fr; } }
+      @media (max-width: 640px) { .g2, .g4 { grid-template-columns: 1fr; } .wrap { padding: 0 calc(16px * var(--dens, 1)); } }
+      /* stat card */
+      .stat-card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: calc(14px * var(--dens, 1)) calc(16px * var(--dens, 1)); }
+      .stat-label { font-family: var(--mono); font-size: calc(10.5px * var(--fs, 1)); letter-spacing: .08em; text-transform: uppercase; color: var(--text-soft); }
+      .stat-value { font-family: var(--serif); font-size: calc(34px * var(--fs, 1)); line-height: 1.1; margin-top: calc(4px * var(--dens, 1)); color: var(--slate); }
+      .stat-sub { font-size: calc(12.5px * var(--fs, 1)); color: var(--text-muted); margin-top: calc(4px * var(--dens, 1)); }
+      /* highlight */
+      .highlight-box { background: #F0F8FC; border: 1px solid #A9D6EE; border-left: 2px solid var(--clay); padding: calc(13px * var(--dens, 1)) calc(17px * var(--dens, 1)); border-radius: 4px; font-size: calc(13.5px * var(--fs, 1)); max-width: 72ch; }
+      /* 定義卡 */
+      .def-card { background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--clay); border-radius: 4px; padding: calc(16px * var(--dens, 1)) calc(20px * var(--dens, 1)); }
+      .def-term { font-family: var(--serif); font-size: calc(19px * var(--fs, 1)); color: var(--slate); }
+      .def-term .orig { font-family: var(--mono); font-size: calc(11.5px * var(--fs, 1)); color: var(--text-soft); margin-left: calc(8px * var(--dens, 1)); }
+      .def-oneliner { font-size: calc(15px * var(--fs, 1)); color: var(--slate); margin-top: calc(6px * var(--dens, 1)); line-height: 1.6; }
+      .def-oneliner em { font-style: normal; font-weight: 600; color: var(--clay-ink); }
+      .def-detail { font-size: calc(13px * var(--fs, 1)); color: var(--text-muted); margin-top: calc(10px * var(--dens, 1)); padding-top: calc(10px * var(--dens, 1)); border-top: 1px dashed var(--border); line-height: 1.6; }
+      /* 類比橋 */
+      .analogy { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: calc(18px * var(--dens, 1)) calc(22px * var(--dens, 1)); }
+      .analogy-head { font-family: var(--serif); font-size: calc(19px * var(--fs, 1)); color: var(--slate); margin-bottom: calc(14px * var(--dens, 1)); }
+      .analogy-head em { font-style: normal; font-weight: 600; color: var(--clay-ink); }
+      .analogy-row { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: center; gap: calc(8px * var(--dens, 1)); padding: calc(7px * var(--dens, 1)) 0; border-top: 1px solid var(--line); font-size: calc(13.5px * var(--fs, 1)); }
+      .analogy-row .known { color: var(--text-muted); }
+      .analogy-row .arrow { text-align: center; color: var(--text-soft); font-size: calc(12px * var(--fs, 1)); }
+      .analogy-row .target { font-weight: 600; color: var(--slate); }
+      .analogy-limit { margin-top: calc(14px * var(--dens, 1)); padding: calc(10px * var(--dens, 1)) calc(13px * var(--dens, 1)); background: #F0F8FC; border: 1px solid #A9D6EE; border-radius: 4px; font-size: calc(12.5px * var(--fs, 1)); color: var(--text-muted); line-height: 1.55; }
+      @media (max-width: 640px) { .analogy-row { grid-template-columns: 1fr; gap: calc(2px * var(--dens, 1)); } .analogy-row .arrow { text-align: left; } }
+      /* 狀態演進 */
+      .steps { position: relative; padding-left: calc(34px * var(--dens, 1)); }
+      .steps::before { content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
+      .step { position: relative; margin-bottom: calc(18px * var(--dens, 1)); }
+      .step::before { content: ""; position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--clay); border: 2.5px solid var(--bg); box-shadow: 0 0 0 1.5px var(--clay); }
+      .step-title { font-family: var(--serif); font-size: calc(17px * var(--fs, 1)); }
+      .step-title .when { font-family: var(--mono); font-size: calc(11.5px * var(--fs, 1)); color: var(--text-soft); margin-left: calc(8px * var(--dens, 1)); }
+      .step-desc { font-size: calc(13px * var(--fs, 1)); color: var(--text-muted); margin-top: calc(2px * var(--dens, 1)); max-width: 72ch; }
+      .mock { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 4px; padding: calc(13px * var(--dens, 1)) calc(15px * var(--dens, 1)); margin-top: calc(10px * var(--dens, 1)); position: relative; font-family: var(--mono); font-size: calc(12px * var(--fs, 1)); line-height: 1.6; color: var(--g700); white-space: pre-wrap; overflow-wrap: anywhere; }
+      .mock-label { position: absolute; top: -8px; left: 12px; background: var(--bg-card); font-family: var(--mono); font-size: calc(10px * var(--fs, 1)); letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); padding: calc(2px * var(--dens, 1)) calc(8px * var(--dens, 1)); border: 1px solid var(--border); border-radius: 3px; white-space: nowrap; }
+      .mock .chg { background: #CCE7F5; color: var(--clay-ink); }
+      .mock .dim { color: var(--text-soft); }
+      /* 誤解 */
+      .myth { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--paper); }
+      .myth > div { padding: calc(16px * var(--dens, 1)) calc(20px * var(--dens, 1)); }
+      .myth .m-wrong { background: #F0F8FC; }
+      .myth .m-right { background: var(--paper); border-left: 1px solid var(--line); }
+      .myth .h { font-family: var(--mono); font-size: calc(10.5px * var(--fs, 1)); letter-spacing: .08em; text-transform: uppercase; margin-bottom: calc(8px * var(--dens, 1)); }
+      .myth .m-wrong .h { color: var(--clay-ink); }
+      .myth .m-right .h { color: var(--green-ink); }
+      .myth .body { font-size: calc(13.5px * var(--fs, 1)); line-height: 1.65; color: var(--slate); }
+      @media (max-width: 640px) { .myth { grid-template-columns: 1fr; } .myth .m-right { border-left: 0; border-top: 1px solid var(--line); } }
+      /* 邊界 */
+      .bound { display: grid; grid-template-columns: 22px 1fr; gap: calc(12px * var(--dens, 1)); padding: calc(13px * var(--dens, 1)) calc(16px * var(--dens, 1)); border: 1px solid var(--line); border-radius: 4px; background: var(--paper); font-size: calc(13.5px * var(--fs, 1)); }
+      .bound .ico { background: #1d1a16; color: #fffdfa; border-radius: 2px; width: 22px; height: 22px; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: calc(13px * var(--fs, 1)); line-height: 1; align-self: flex-start; }
+      .bound b { display: block; margin-bottom: calc(2px * var(--dens, 1)); }
+      .bound .why { color: var(--text-muted); font-size: calc(12.5px * var(--fs, 1)); }
+      /* 漸進揭露 */
+      .reveal { border: 1px solid var(--line); border-radius: 4px; background: var(--paper); margin-top: calc(12px * var(--dens, 1)); overflow: hidden; }
+      .reveal > summary { cursor: pointer; padding: calc(12px * var(--dens, 1)) calc(16px * var(--dens, 1)); font-size: calc(13.5px * var(--fs, 1)); color: var(--text-muted); display: flex; align-items: center; gap: calc(10px * var(--dens, 1)); list-style: none; }
+      .reveal > summary::-webkit-details-marker { display: none; }
+      .reveal > summary::before { content: "▸"; color: var(--clay); font-size: calc(11px * var(--fs, 1)); transition: transform .18s; flex-shrink: 0; }
+      .reveal[open] > summary::before { transform: rotate(90deg); }
+      .reveal > summary:hover { background: var(--bg-soft); color: var(--text); }
+      .reveal > summary .tag { margin-left: auto; font-family: var(--mono); font-size: calc(10px * var(--fs, 1)); letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); }
+      .reveal-body { padding: calc(4px * var(--dens, 1)) calc(18px * var(--dens, 1)) calc(18px * var(--dens, 1)); font-size: calc(13.5px * var(--fs, 1)); line-height: 1.7; color: var(--text-muted); border-top: 1px dashed var(--border); }
+      .reveal-body p { max-width: 72ch; }
+      /* 表格 */
+      .tbl { width: 100%; border-collapse: collapse; font-size: calc(13.5px * var(--fs, 1)); table-layout: fixed; }
+      .tbl th, .tbl td { text-align: left; padding: calc(9px * var(--dens, 1)) calc(10px * var(--dens, 1)); border-bottom: 1px solid var(--line); vertical-align: top; }
+      .tbl th { font-family: var(--mono); font-size: calc(11px * var(--fs, 1)); letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); font-weight: 500; }
+      .tbl td code, .note code, .step-desc code, .def-detail code, .reveal-body code, .bound code, .myth code { font-family: var(--mono); font-size: calc(12px * var(--fs, 1)); background: var(--g100); padding: calc(1px * var(--dens, 1)) calc(5px * var(--dens, 1)); border-radius: 2px; }
+      @media (max-width: 640px) {
+        .tbl, .tbl thead, .tbl tbody, .tbl tr, .tbl th, .tbl td { display: block; }
+        .tbl thead { display: none; }
+        .tbl tr { border: 1px solid var(--line); border-radius: 4px; margin-bottom: calc(10px * var(--dens, 1)); padding: calc(8px * var(--dens, 1)) calc(10px * var(--dens, 1)); background: var(--paper); }
+        .tbl td { border: 0; padding: calc(3px * var(--dens, 1)) 0; }
+        .tbl td::before { content: attr(data-k); display: block; font-family: var(--mono); font-size: calc(10.5px * var(--fs, 1)); letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); }
+      }
+      /* 泳道 SVG */
+      .figure { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; background: var(--ivory); border: 1px solid var(--line); border-radius: 4px; }
+      .figure svg { display: block; width: 100%; height: auto; }
+      svg.vb1000 { min-width: 1000px; }
+      svg text { font-family: var(--sans); font-size: calc(12px * var(--fs, 1)); fill: var(--g700); }
+      svg text.n { font-size: calc(13px * var(--fs, 1)); font-weight: 600; fill: var(--slate); }
+      svg text.mono { font-family: var(--mono); }
+      svg text.accent { fill: var(--clay-ink); }
+      svg text.lane { font-family: var(--mono); font-size: calc(11px * var(--fs, 1)); fill: var(--g500); letter-spacing: .08em; }
+      .fig-cap { font-size: calc(12.5px * var(--fs, 1)); color: var(--text-soft); margin-top: calc(8px * var(--dens, 1)); }
+      /* 列印：淡入段落照樣看得到 */
+      @media print { * { opacity: 1 !important; transform: none !important; } .figure { overflow: visible; } }
+      /* 固定列 */
+      footer.foot { border-top: 1px solid var(--line); margin-top: calc(40px * var(--dens, 1)); padding: calc(24px * var(--dens, 1)) 0 calc(120px * var(--dens, 1)); font-size: calc(12.5px * var(--fs, 1)); color: var(--text-soft); display: flex; justify-content: space-between; gap: calc(16px * var(--dens, 1)); flex-wrap: wrap; }
+    </style>
+    <style>
+/* 結構圖探索層＋浮動說明窗 — 與 diagram-explore.js 成對，整段內嵌進頁面 <style>（不外連）。
+   依賴頁面既有 token：--sans --mono --g300 --g700 --slate；缺的用後備值。
+   掛載條件與標記規則見 references/structure-diagrams.md §6.7。
+   說明與追線結果都在浮動窗裡，圖吃滿寬。 */
+.xp {
+  --xp-hot: #1f5fbf;
+}
+.xp .figure {
+  min-width: 0;
+}
+.xp .xp-main {
+  min-width: 0;
+}
+/* 章節設定資料的 script 也掛 .xp-views，下面的 display:flex 會把它撐成可見文字；只給 div */
+.xp script.xp-views {
+  display: none !important;
+}
+.xp div.xp-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(6px * var(--dens, 1));
+  margin: 0 0 calc(8px * var(--dens, 1));
+}
+.xp .xp-views button {
+  font: calc(12.5px * var(--fs, 1)) var(--sans, sans-serif);
+  padding: calc(5px * var(--dens, 1)) calc(10px * var(--dens, 1));
+  border: 1px solid var(--g300, #d1cfc5);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--g700, #3d3d3a);
+}
+.xp .xp-views button.active {
+  background: var(--slate, #141413);
+  color: #fff;
+  border-color: var(--slate, #141413);
+}
+.xp .xp-note {
+  background: #fff;
+  border-left: 3px solid var(--xp-hot);
+  padding: calc(8px * var(--dens, 1)) calc(12px * var(--dens, 1));
+  border-radius: 0 6px 6px 0;
+  margin: 0 0 calc(8px * var(--dens, 1));
+  font-size: calc(13.5px * var(--fs, 1));
+}
+.xp .xp-note:empty {
+  display: none;
+}
+.xp .xp-hint {
+  font-size: calc(12.5px * var(--fs, 1));
+  color: var(--g500, #87867f);
+  margin: 0 0 calc(8px * var(--dens, 1));
+}
+
+/* ── 浮動說明窗（全頁一個，掛在 body 下）── */
+.xp-panel {
+  --xp-hot: #1f5fbf;
+  box-sizing: border-box; /* 不依賴頁面有沒有全域 border-box：手機寬 100% 加內距會凸出畫面 */
+  position: fixed;
+  right: 18px;
+  top: 76px;
+  max-height: calc(100vh - 100px); /* 高度跟著內容走：內容少時不要撐滿、多蓋住圖 */
+  width: min(30em, 92vw);
+  overflow: auto;
+  background: #fff;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 12px;
+  box-shadow: 0 14px 44px rgba(20, 20, 19, 0.18);
+  padding: calc(16px * var(--dens, 1)) calc(22px * var(--dens, 1)) calc(20px * var(--dens, 1));
+  z-index: 9000;
+  font: calc(14px * var(--fs, 1))/1.7 var(--sans, system-ui, sans-serif);
+  color: var(--slate, #141413);
+  text-align: left;
+}
+.xp-panel[hidden] {
+  display: none;
+}
+.xp-panel.dragging {
+  box-shadow: 0 20px 60px rgba(20, 20, 19, 0.28);
+}
+/* 只管窗自己的圖示；作者放進說明裡的圖照原尺寸（之前套到窗內所有 svg，會把 200×80 的圖壓成 14×14） */
+.xp-grip svg,
+.xp-ibtn svg {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.xp-grip {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  font-size: calc(11.5px * var(--fs, 1));
+  color: var(--g500, #87867f);
+  padding: calc(2px * var(--dens, 1)) calc(80px * var(--dens, 1)) calc(8px * var(--dens, 1)) 0;
+  margin-bottom: calc(8px * var(--dens, 1));
+  border-bottom: 1px dashed var(--g300, #d1cfc5);
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--dens, 1));
+}
+.xp-panel.dragging .xp-grip {
+  cursor: grabbing;
+}
+.xp-ibtn {
+  position: absolute;
+  top: 9px;
+  border: 1px solid var(--g300, #d1cfc5);
+  background: #fff;
+  border-radius: 6px;
+  padding: calc(3px * var(--dens, 1)) calc(6px * var(--dens, 1));
+  cursor: pointer;
+  color: var(--g700, #3d3d3a);
+  display: flex;
+  align-items: center;
+}
+.xp-ibtn:hover {
+  border-color: var(--xp-hot);
+}
+.xp-flip {
+  right: 44px;
+}
+.xp-close {
+  right: 12px;
+}
+.xp-tag {
+  display: inline-block;
+  font-size: calc(11px * var(--fs, 1));
+  border-radius: 3px;
+  padding: calc(1px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  background: var(--slate, #141413);
+  color: #fff;
+}
+.xp-tag[hidden] {
+  display: none;
+}
+.xp-panel h3.xp-title {
+  font-family: var(--serif, Georgia, serif);
+  font-weight: 500;
+  font-size: calc(20px * var(--fs, 1));
+  line-height: 1.35;
+  margin: calc(6px * var(--dens, 1)) 0 calc(4px * var(--dens, 1));
+}
+.xp-body h4 {
+  font-family: var(--mono, monospace);
+  font-size: calc(11.5px * var(--fs, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--g500, #87867f);
+  margin: calc(14px * var(--dens, 1)) 0 calc(4px * var(--dens, 1));
+}
+.xp-body p {
+  margin: 0 0 calc(6px * var(--dens, 1));
+}
+.xp-panel ul,
+.xp-panel ol {
+  margin: calc(4px * var(--dens, 1)) 0;
+  padding-left: calc(20px * var(--dens, 1));
+}
+.xp-panel ul {
+  list-style: disc;
+}
+.xp-panel ol {
+  list-style: decimal;
+}
+.xp-panel li {
+  margin: calc(3px * var(--dens, 1)) 0;
+}
+.xp-dim {
+  color: var(--g500, #87867f);
+}
+.xp-nav {
+  margin-top: calc(16px * var(--dens, 1));
+  padding-top: calc(12px * var(--dens, 1));
+  border-top: 1.5px solid var(--g200, #e6e3da);
+  font-size: calc(12.5px * var(--fs, 1));
+  color: var(--g700, #3d3d3a);
+}
+.xp-nav[hidden] {
+  display: none;
+}
+.xp-row {
+  margin: calc(2px * var(--dens, 1)) 0;
+}
+.xp-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(6px * var(--dens, 1));
+  margin-top: calc(8px * var(--dens, 1));
+}
+.xp-btns button {
+  font: calc(12.5px * var(--fs, 1)) var(--sans, sans-serif);
+  padding: calc(4px * var(--dens, 1)) calc(10px * var(--dens, 1));
+  border: 1px solid var(--g300, #d1cfc5);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--g700, #3d3d3a);
+}
+.xp-btns button:hover {
+  border-color: var(--xp-hot);
+}
+.xp-btns button.active {
+  background: var(--xp-hot);
+  border-color: var(--xp-hot);
+  color: #fff;
+}
+.xp-panel kbd,
+.xp kbd {
+  font: calc(11px * var(--fs, 1)) var(--mono, monospace);
+  border: 1px solid var(--g300, #d1cfc5);
+  border-bottom-width: 2px;
+  padding: 0 calc(5px * var(--dens, 1));
+  border-radius: 4px;
+  background: #fff;
+}
+
+svg.xplore {
+  user-select: none;
+  -webkit-user-select: none;
+}
+svg.xplore .node {
+  cursor: pointer;
+  outline: none;
+}
+svg.xplore .node:hover .box,
+svg.xplore .node:focus-visible .box {
+  stroke: var(--xp-hot, #1f5fbf);
+  stroke-width: 1.8;
+}
+svg.xplore .edge .hit {
+  cursor: pointer;
+}
+svg.xplore .node,
+svg.xplore .edge,
+svg.xplore .elabel {
+  transition: opacity 0.18s;
+}
+svg.xplore.has-focus .node:not(.on),
+svg.xplore.has-focus .elabel:not(.on) {
+  opacity: 0.22;
+}
+svg.xplore.has-focus .edge:not(.on) {
+  opacity: 0.15;
+}
+svg.xplore .node.on.is-focus .box {
+  stroke: var(--xp-hot, #1f5fbf);
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 4px rgba(31, 95, 191, 0.35));
+}
+svg.xplore .edge.on .ln {
+  stroke: var(--xp-hot, #1f5fbf);
+  stroke-width: 2.2;
+}
+svg.xplore .node.off {
+  opacity: 0.18;
+}
+svg.xplore .lg {
+  cursor: pointer;
+}
+svg.xplore .lg.off {
+  opacity: 0.35;
+}
+svg.xplore .ordbg {
+  fill: var(--xp-hot, #1f5fbf);
+}
+svg.xplore .ord {
+  font-size: calc(10px * var(--fs, 1));
+  font-weight: 700;
+  fill: #fff;
+}
+@media (max-width: 760px) {
+  .xp-panel {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-height: 64vh;
+    border-radius: 14px 14px 0 0;
+    z-index: 10000;
+  }
+  .xp-grip,
+  .xp-flip {
+    display: none;
+  }
+}
+    </style>
+  <style id="vt-profile" data-profile-hash="da39a3ee5e"></style>
+</head>
+  <body>
+    <header>
+      <div class="wrap">
+        <div class="eyebrow">Baton 接力棒 · 單一專案的目標流程 · 2026-11-07</div>
+        <h1><span class="ph">一個專案怎麼在三台機器間</span><span class="ph"><em>接力</em>而不掉棒</span></h1>
+        <p class="intro">
+          Baton 裡的每個專案都是一個資料夾、三個控制檔。開 session 自動拉最新進度，收工自動推回去，儀表板讀同一份檔案，
+          在儀表板上勾選或下指示也會寫回同一份檔案。這一頁用一個專案走完整圈，告訴你棒子在哪、誰拿著、怎麼交。
+        </p>
+        <nav class="toc">
+          <a href="#what"><span class="n">01</span>一句話</a>
+          <a href="#analogy"><span class="n">02</span>類比</a>
+          <a href="#model"><span class="n">03</span>核心模型</a>
+          <a href="#walk"><span class="n">04</span>走一遍</a>
+          <a href="#myth"><span class="n">05</span>常見誤解</a>
+          <a href="#bound"><span class="n">06</span>邊界</a>
+          <a href="#deep"><span class="n">07</span>速查</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <!-- 01 一句話 -->
+        <section id="what">
+          <div class="sec-head">
+            <span class="sec-idx">01</span>
+            <div>
+              <h2>一句話</h2>
+              <div class="sec-sub">這是什麼、不這樣做會怎樣</div>
+            </div>
+          </div>
+          <p class="lead">
+            <strong>一個專案的「現況」只存在一個地方：GitHub 上 main 分支的 <code>handoff.md</code>。</strong>
+            每台機器開 session 先拉它、收工先推它，儀表板只是把它投影出來。棒子永遠只有一根，誰拿著寫在檔案裡的 <code>owner</code> 欄。
+          </p>
+          <div class="g4 mt">
+            <div class="stat-card"><div class="stat-label">控制檔</div><div class="stat-value">3</div><div class="stat-sub">CLAUDE.md 規則、handoff.md 現況、progress.md 流水帳</div></div>
+            <div class="stat-card"><div class="stat-label">機器</div><div class="stat-value">3</div><div class="stat-sub">Mac mini、MacBook Air、Groq bot 主機，同一時間只有一台持棒</div></div>
+            <div class="stat-card"><div class="stat-label">公開網址</div><div class="stat-value">1</div><div class="stat-sub">baton.atticus.tw，入口頁加各儀表板</div></div>
+            <div class="stat-card"><div class="stat-label">寫回路徑</div><div class="stat-value">2</div><div class="stat-sub">勾選框直接改檔；輸入列交給 Claude 改檔</div></div>
+          </div>
+          <div class="g3 mt">
+            <div class="def-card">
+              <div class="def-term">交接單<span class="orig">handoff.md</span></div>
+              <div class="def-oneliner">專案<em>此刻</em>的狀態：做到哪、下一步、要小心什麼。整份覆寫，40 行以內。</div>
+              <div class="def-detail">開頭一段 front matter 給儀表板讀：owner 是誰持棒、next 是最該做的一件事、due 與 updated。「下一步」的勾選框就是儀表板上的任務。</div>
+            </div>
+            <div class="def-card">
+              <div class="def-term">流水帳<span class="orig">progress.md</span></div>
+              <div class="def-oneliner">每做完一輪就在末尾<em>追加一段</em>，從不改舊段落。</div>
+              <div class="def-detail">段落標題寫日期、機器代號、工具。兩台同時追加也不會衝突，因為 git 設了 merge=union，兩邊的段落都留下。</div>
+            </div>
+            <div class="def-card">
+              <div class="def-term">接力棒<span class="orig">owner 欄</span></div>
+              <div class="def-oneliner">handoff.md 裡寫著<em>目前哪台機器負責</em>；接手前看它，接手時改成自己。</div>
+              <div class="def-detail">handoff.md 沒有合併保護，兩台同時改寫會停住等人解。所以靠這個欄位約定：同一時間只在一台機器上動同一個專案。</div>
+            </div>
+          </div>
+          <div class="highlight-box mt">
+            不這樣做會怎樣：每台機器各有一份「我記得做到哪」，換機器就要從頭講一次；儀表板上看到的也是舊的。Baton 把這三件事收成同一份檔案，由 git 負責搬運。
+          </div>
+        </section>
+
+        <!-- 02 類比 -->
+        <section id="analogy">
+          <div class="sec-head">
+            <span class="sec-idx">02</span>
+            <div>
+              <h2>類比</h2>
+              <div class="sec-sub">名字就叫接力棒，拿接力賽來對照最直接</div>
+            </div>
+          </div>
+          <div class="analogy">
+            <div class="analogy-head">一個專案的進度，像<em>接力賽裡的那根棒子</em></div>
+            <div class="analogy-row"><span class="known">棒子本身</span><span class="arrow">↔</span><span class="target">handoff.md：現況、下一步、陷阱</span></div>
+            <div class="analogy-row"><span class="known">正在跑的那位選手</span><span class="arrow">↔</span><span class="target">owner 欄寫的那台機器</span></div>
+            <div class="analogy-row"><span class="known">交棒區：交之前要確認對方伸手了</span><span class="arrow">↔</span><span class="target">收工 /wrap 改寫交接單、sync.sh 推上 GitHub</span></div>
+            <div class="analogy-row"><span class="known">接棒的選手起跑</span><span class="arrow">↔</span><span class="target">另一台開 session，SessionStart hook 自動 pull</span></div>
+            <div class="analogy-row"><span class="known">每一棒的分段計時</span><span class="arrow">↔</span><span class="target">progress.md 只追加的段落</span></div>
+            <div class="analogy-row"><span class="known">場邊的計分板</span><span class="arrow">↔</span><span class="target">baton.atticus.tw 儀表板</span></div>
+            <div class="analogy-limit">
+              <strong>類比在哪裡失準：</strong>接力賽的計分板只能看，Baton 的儀表板可以直接在棒子上寫字：勾一下就改 handoff.md，打一句話就有 Claude 幫你改。
+              另外接力賽交棒是面對面，Baton 是透過 GitHub 轉交，接棒的機器要等到下次開 session 才會拿到。
+            </div>
+          </div>
+        </section>
+
+        <!-- 03 核心模型 -->
+        <section id="model">
+          <div class="sec-head">
+            <span class="sec-idx">03</span>
+            <div>
+              <h2>核心模型</h2>
+              <div class="sec-sub">五道泳道：持棒的機器、GitHub main、GitHub Actions、儀表板、接棒的機器。點任一格看它在做什麼、怎麼驗</div>
+            </div>
+          </div>
+          <div class="xp" data-explore>
+            <div class="figure">
+              <svg class="vb1000 xplore" viewBox="0 0 1000 530" role="img" aria-labelledby="bf-title bf-desc">
+                <title id="bf-title">一個專案在 Baton 裡的流程泳道圖</title>
+                <desc id="bf-desc">持棒的機器開 session、做事、收工後推到 GitHub main；Actions 產出儀表板；儀表板上的勾選與指示再寫回 main；接棒的機器開 session 時拉到最新交接單。</desc>
+                <defs>
+                  <marker id="bf-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6b655d"/></marker>
+                  <marker id="bf-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#006DA3"/></marker>
+                </defs>
+                <rect width="100%" height="100%" fill="#f6f4f0"/>
+                <!-- 泳道分隔 -->
+                <line x1="0" y1="114" x2="1000" y2="114" stroke="#ddd8cf" stroke-width="1"/>
+                <line x1="0" y1="204" x2="1000" y2="204" stroke="#ddd8cf" stroke-width="1"/>
+                <line x1="0" y1="294" x2="1000" y2="294" stroke="#ddd8cf" stroke-width="1"/>
+                <line x1="0" y1="384" x2="1000" y2="384" stroke="#ddd8cf" stroke-width="1"/>
+                <line x1="0" y1="474" x2="1000" y2="474" stroke="#ddd8cf" stroke-width="1"/>
+                <text x="16" y="44" class="lane">持棒的機器</text>
+                <text x="16" y="134" class="lane">GitHub main</text>
+                <text x="16" y="224" class="lane">GitHub Actions</text>
+                <text x="16" y="314" class="lane">儀表板 baton.atticus.tw</text>
+                <text x="16" y="404" class="lane">接棒的機器</text>
+
+                <!-- 連線（先畫） -->
+                <g class="edge" data-from="open" data-to="work" data-label="">
+                  <path class="hit" d="M340,69 H370" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M340,69 H370" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="work" data-to="sync" data-label="">
+                  <path class="hit" d="M520,69 H550" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M520,69 H550" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="sync" data-to="main" data-label="push">
+                  <path class="hit" d="M625,98 V130" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M625,98 V130" fill="none" stroke="#006DA3" stroke-width="1.6" marker-end="url(#bf-arrow-accent)"/>
+                </g>
+                <g class="edge" data-from="main" data-to="build" data-label="觸發重建">
+                  <path class="hit" d="M550,172 H453 Q445,172 445,180 V220" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M550,172 H453 Q445,172 445,180 V220" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="build" data-to="dash" data-label="發布">
+                  <path class="hit" d="M445,278 V337 Q445,345 453,345 H550" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M445,278 V337 Q445,345 453,345 H550" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="dash" data-to="main" data-label="勾選寫回 commit">
+                  <path class="hit" d="M625,310 V188" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M625,310 V188" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="dash" data-to="claude" data-label="輸入列開 Issue">
+                  <path class="hit" d="M700,324 H867 Q875,324 875,316 V278" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M700,324 H867 Q875,324 875,316 V278" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="claude" data-to="main" data-label="Claude 改檔後 commit">
+                  <path class="hit" d="M800,241 H756 Q748,241 748,233 V167 Q748,159 740,159 H700" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M800,241 H756 Q748,241 748,233 V167 Q748,159 740,159 H700" fill="none" stroke="#6b655d" stroke-width="1.4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="claude" data-to="build" data-label="重建儀表板">
+                  <path class="hit" d="M800,268 H633 a8,8 0 0,0 -16,0 H520" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M800,268 H633 a8,8 0 0,0 -16,0 H520" fill="none" stroke="#6b655d" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#bf-arrow)"/>
+                </g>
+                <g class="edge" data-from="main" data-to="next" data-label="SessionStart 自動 pull">
+                  <path class="hit" d="M550,149 H273 Q265,149 265,157 V400" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M550,149 H273 Q265,149 265,157 V400" fill="none" stroke="#006DA3" stroke-width="1.6" marker-end="url(#bf-arrow-accent)"/>
+                </g>
+                <g class="edge" data-from="next" data-to="open" data-label="換它持棒，流程重來">
+                  <path class="hit" d="M300,400 V157 a8,8 0 0,1 0,-16 V98" fill="none" stroke="transparent" stroke-width="14"/>
+                  <path class="ln" d="M300,400 V157 a8,8 0 0,1 0,-16 V98" fill="none" stroke="#6b655d" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#bf-arrow)"/>
+                </g>
+
+                <!-- 標籤（遮罩＋間隙） -->
+                <g class="elabel"><rect x="631" y="106" width="38" height="16" fill="#f6f4f0"/><text x="635" y="118" class="accent">push</text></g>
+                <g class="elabel"><rect x="451" y="193" width="60" height="16" fill="#f6f4f0"/><text x="455" y="205">觸發重建</text></g>
+                <g class="elabel"><rect x="483" y="323" width="36" height="16" fill="#f6f4f0"/><text x="501" y="335" text-anchor="middle">發布</text></g>
+                <g class="elabel"><rect x="631" y="243" width="112" height="16" fill="#f6f4f0"/><text x="635" y="255">勾選寫回 commit</text></g>
+                <g class="elabel"><rect x="733" y="302" width="100" height="16" fill="#f6f4f0"/><text x="783" y="314" text-anchor="middle">輸入列開 Issue</text></g>
+                <g class="elabel"><rect x="754" y="193" width="132" height="16" fill="#f6f4f0"/><text x="758" y="205">Claude 改檔後 commit</text></g>
+                <g class="elabel"><rect x="535" y="246" width="66" height="16" fill="#f6f4f0"/><text x="568" y="258" text-anchor="middle">重建儀表板</text></g>
+                <g class="elabel"><rect x="123" y="333" width="136" height="16" fill="#f6f4f0"/><text x="257" y="345" text-anchor="end" class="accent">SessionStart 自動 pull</text></g>
+                <g class="elabel"><rect x="306" y="288" width="120" height="16" fill="#f6f4f0"/><text x="310" y="300">換它持棒，流程重來</text></g>
+
+                <!-- 節點（後畫） -->
+                <g class="node" data-id="open" data-kind="machine" data-title="開 session" transform="translate(190,40)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#6b655d"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">開 session</text>
+                  <text x="75" y="40" text-anchor="middle">SessionStart hook 先 pull</text>
+                </g>
+                <g class="node" data-id="work" data-kind="machine" data-title="做事、收工 /wrap" transform="translate(370,40)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#6b655d"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">做事、收工 /wrap</text>
+                  <text x="75" y="40" text-anchor="middle">追加流水帳、改寫交接單</text>
+                </g>
+                <g class="node" data-id="sync" data-kind="machine" data-title="sync.sh" transform="translate(550,40)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#6b655d"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">sync.sh</text>
+                  <text x="75" y="40" text-anchor="middle">commit、pull、push</text>
+                </g>
+                <g class="node" data-id="main" data-kind="store" data-title="main 分支" transform="translate(550,130)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#1d1a16"/>
+                  <text x="8" y="14" class="mono" style="font-size:calc(9px * var(--fs, 1));fill:#6b655d;letter-spacing:.1em">GIT</text>
+                  <text x="75" y="26" class="n" text-anchor="middle">main 分支</text>
+                  <text x="75" y="44" text-anchor="middle">唯一真相：三個控制檔</text>
+                </g>
+                <g class="node" data-id="build" data-kind="actions" data-title="dashboard.yml" transform="translate(370,220)">
+                  <rect width="150" height="58" rx="6" fill="#f6f4f0"/>
+                  <rect class="box" width="150" height="58" rx="6" fill="rgba(29,26,22,.03)" stroke="rgba(29,26,22,.30)"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">dashboard.yml</text>
+                  <text x="75" y="40" text-anchor="middle">產 data.js，推到公開倉庫</text>
+                </g>
+                <g class="node" data-id="claude" data-kind="actions" data-title="claude-task.yml" transform="translate(800,220)">
+                  <rect width="150" height="58" rx="6" fill="#f6f4f0"/>
+                  <rect class="box" width="150" height="58" rx="6" fill="rgba(29,26,22,.03)" stroke="rgba(29,26,22,.30)"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">claude-task.yml</text>
+                  <text x="75" y="40" text-anchor="middle">Claude 依指示改專案檔案</text>
+                </g>
+                <g class="node" data-id="dash" data-kind="dash" data-title="專案儀表板 /projects/" transform="translate(550,310)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#6b655d"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">專案儀表板 /projects/</text>
+                  <text x="75" y="40" text-anchor="middle">看、勾選、送指示</text>
+                </g>
+                <g class="node" data-id="next" data-kind="machine" data-title="另一台開 session" transform="translate(190,400)">
+                  <rect class="box" width="150" height="58" rx="6" fill="#fffdfa" stroke="#6b655d"/>
+                  <text x="75" y="22" class="n" text-anchor="middle">另一台開 session</text>
+                  <text x="75" y="40" text-anchor="middle">拉到最新交接單，改 owner</text>
+                </g>
+
+                <!-- 圖例 -->
+                <line x1="30" y1="490" x2="970" y2="490" stroke="#ddd8cf" stroke-width=".8"/>
+                <text x="30" y="508" class="mono" style="letter-spacing:.14em;fill:#6b655d">LEGEND</text>
+                <g class="lg" data-kind="machine"><rect x="110" y="498" width="22" height="12" rx="3" fill="#fffdfa" stroke="#6b655d"/><text x="138" y="508">機器上的步驟</text></g>
+                <g class="lg" data-kind="store"><rect x="236" y="498" width="22" height="12" rx="3" fill="#fffdfa" stroke="#1d1a16"/><text x="264" y="508">git 倉庫</text></g>
+                <g class="lg" data-kind="actions"><rect x="332" y="498" width="22" height="12" rx="3" fill="rgba(29,26,22,.03)" stroke="rgba(29,26,22,.30)"/><text x="360" y="508">GitHub Actions</text></g>
+                <g class="lg" data-kind="dash"><rect x="458" y="498" width="22" height="12" rx="3" fill="#fffdfa" stroke="#6b655d"/><text x="486" y="508">公開網頁</text></g>
+                <line x1="570" y1="504" x2="600" y2="504" stroke="#006DA3" stroke-width="1.6"/><text x="608" y="508">主線：推上去、接棒</text>
+                <line x1="740" y1="504" x2="770" y2="504" stroke="#6b655d" stroke-width="1.4" stroke-dasharray="5,4"/><text x="778" y="508">自動觸發、回頭路</text>
+              </svg>
+            </div>
+            <script type="application/json" class="xp-views">
+            [
+              {"id":"relay","label":"① 接力主線","focus":["open","work","sync","main","next"],"note":"一台做完推上去，另一台開 session 就拿到。棒子沿藍線走。"},
+              {"id":"view","label":"② 儀表板怎麼來的","focus":["main","build","dash"],"note":"handoff 或 progress 一變，Actions 重產 data.js 推到公開倉庫，網址一分鐘內更新。"},
+              {"id":"write","label":"③ 從儀表板寫回","focus":["dash","main","claude","build"],"note":"勾選直接 commit；輸入列開 Issue 交給 Claude，改完 commit 再重建儀表板。"}
+            ]
+            </script>
+            <template data-detail="open" data-tag="每次開 session">
+              <h4>在做什麼</h4><p>在專案資料夾（例如 <code>~/Project/Baton/baton</code>）開 Claude App 或終端機的 session。使用者層的 SessionStart hook 先跑 <code>git pull --rebase --autostash</code>，把 main 上最新的三個控制檔拉下來，再讀 <code>handoff.md</code> 用三十秒摘要現況。</p>
+              <h4>驗收</h4><ul><li>session 開頭的摘要寫得出「做到哪、下一步、要小心什麼」</li><li>handoff.md 的 <code>owner</code> 是這台機器；不是就先改成自己再動</li></ul>
+            </template>
+            <template data-detail="work" data-tag="持棒期間">
+              <h4>在做什麼</h4><p>正常工作。有實質進展就在 <code>progress.md</code> 末尾追加一段（日期、機器代號、工具）；收工打 <code>/wrap</code>，整份改寫 <code>handoff.md</code>，更新 updated 與下一步的勾選框。</p>
+              <h4>誰來做</h4><p>Claude 在 session 裡做，使用者只要說「收工」。</p>
+              <h4>驗收</h4><ul><li>handoff.md 40 行以內，front matter 的 updated 是現在</li><li>做完的勾選框打勾，下次改寫時移走</li></ul>
+            </template>
+            <template data-detail="sync" data-tag="Stop hook 自動跑">
+              <h4>在做什麼</h4><p><code>scripts/sync.sh</code>：有改動才 commit（訊息 <code>progress: 機器代號 時間</code>），先 pull --rebase 再 push。沒改動就安靜結束。每個回合結束的 Stop hook 都會跑一次，所以就算忘了 /wrap，改動也會上去。</p>
+              <h4>現況</h4><p>Mac mini 已用無頭 CLI 直接驗到 SessionStart 與 Stop 兩個 hook 都有跑、exit 0。</p>
+              <h4>驗收</h4><ul><li>GitHub 上出現新 commit</li><li>pull 撞到衝突會停下來不會 force</li></ul>
+            </template>
+            <template data-detail="main" data-tag="唯一真相">
+              <h4>在做什麼</h4><p>私有倉庫 <code>atticuswu/Baton</code> 的 main 分支。每個專案一個資料夾，裡面 CLAUDE.md、handoff.md、progress.md。所有機器、Actions、儀表板讀寫的都是這一份。</p>
+              <h4>為什麼不照舊做</h4><p>以前每台機器各有一份記憶，換機器要重講。改成所有進度都進同一個 git 倉庫，搬運交給 git。</p>
+              <h4>驗收</h4><ul><li>progress.md 設了 merge=union，兩台同時追加不衝突</li><li>handoff.md 沒有，靠 owner 規則</li></ul>
+            </template>
+            <template data-detail="build" data-tag="自動">
+              <h4>在做什麼</h4><p>只要 handoff.md、progress.md 或 dashboard/ 有變就觸發。跑 <code>build-dashboard.py</code> 掃所有專案產出 data.js，把整個 dashboard/ 以單一 commit 覆蓋推到公開倉庫 <code>baton-dashboard</code>，由那邊的 GitHub Pages 用自訂網域發布。</p>
+              <h4>驗收</h4><ul><li>Actions 綠燈，約 15 秒</li><li>baton.atticus.tw/projects/ 重新整理看得到新的 updated 時間（CDN 快取 10 分鐘，頁面載資料時帶時間戳避開）</li></ul>
+            </template>
+            <template data-detail="dash" data-tag="公開網址">
+              <h4>在做什麼</h4><p>入口頁列出所有儀表板；專案儀表板像 Things：今天、即將、隨時、某天、記錄簿。每則待辦有勾選框與一個輸入列。左下角放 GitHub fine-grained token（只給 Baton 的 Contents 與 Issues 讀寫），token 只存在那個瀏覽器。</p>
+              <h4>現況</h4><p>兩條寫回路徑都已實戰驗證（11/07）。</p>
+              <h4>驗收</h4><ul><li>沒 token 時點勾選框會提示先設定</li><li>網址沒有存取控制，任何人拿到都能看</li></ul>
+            </template>
+            <template data-detail="claude" data-tag="Issue 驅動">
+              <h4>在做什麼</h4><p>儀表板輸入列送出會在 Baton 開一個帶 <code>claude</code> 標籤的 Issue。這支 workflow 解析 Issue，用 Claude Code 無頭模式依指示只改該專案資料夾（hooks 關閉、工具白名單），commit、pull --rebase、push，回覆並關閉 Issue，再觸發 dashboard.yml 重建。</p>
+              <h4>誰來做</h4><p>GitHub Actions，不需要任何一台機器醒著。憑證是 Actions secret <code>CLAUDE_CODE_OAUTH_TOKEN</code>。</p>
+              <h4>驗收</h4><ul><li>Issue 底下有 Claude 的回覆與 commit 連結</li><li>commit 作者是 baton-claude[bot]</li></ul>
+            </template>
+            <template data-detail="next" data-tag="接棒">
+              <h4>在做什麼</h4><p>另一台機器（例如 MacBook Air）開 session，SessionStart hook 拉到最新的 handoff.md。接手前看 <code>owner</code> 是誰，接手時改成自己。從這一刻起它就是持棒的機器，流程從最上面那一道重來。</p>
+              <h4>現況</h4><p>目前只有 Mac mini 裝好；Air 與 Groq bot 主機各 clone 一次並跑 <code>install.sh</code> 是下一步。</p>
+              <h4>驗收</h4><ul><li>開 session 的摘要跟上一台收工時寫的一致</li><li>三台跑一輪「改 handoff → /wrap → 另一台 pull」</li></ul>
+            </template>
+          </div>
+          <p class="fig-cap">藍線是棒子走的路：推上 main、再被另一台拉下來。虛線是系統自己接的：Claude 改完檔觸發重建，接棒的機器接著成為持棒者。</p>
+        </section>
+
+        <!-- 04 走一遍 -->
+        <section id="walk">
+          <div class="sec-head">
+            <span class="sec-idx">04</span>
+            <div>
+              <h2>走一遍</h2>
+              <div class="sec-sub">用 Baton 專案自己在 2026-11-07 的真實紀錄，看 handoff.md 在每一步長什麼樣</div>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-title">Mac mini 開 session<span class="when">13:33</span></div>
+              <div class="step-desc">SessionStart hook 先 pull。這時 handoff.md 的 owner 已是 mac-mini，所以直接接著做。</div>
+              <div class="mock"><span class="mock-label">handoff.md · front matter</span>owner: mac-mini
+next: 使用者在終端機 /login 後補驗 Stop hook；然後到 MacBook Air 與 Groq bot 主機安裝
+updated: 2026-11-07T13:33+08:00</div>
+            </div>
+            <div class="step">
+              <div class="step-title">做事、收工 /wrap<span class="when">13:47</span></div>
+              <div class="step-desc">合併雲端 session 的 bundle、驗 macOS 相容性。/wrap 追加一段 progress，整份改寫 handoff。</div>
+              <div class="mock"><span class="mock-label">handoff.md · 改寫後</span>owner: mac-mini
+next: <span class="chg">MacBook Air 與 Groq bot 主機各 clone 一次並跑 install.sh，三台跑一輪接力</span>
+updated: <span class="chg">2026-11-07T13:47+08:00</span>
+<span class="dim">## progress.md 末尾多了一段「## 2026-11-07 13:47 · mac-mini · Claude App」</span></div>
+            </div>
+            <div class="step">
+              <div class="step-title">sync.sh 推上 main<span class="when">13:47</span></div>
+              <div class="step-desc">Stop hook 跑 sync.sh：commit、pull --rebase、push。</div>
+              <div class="mock"><span class="mock-label">git log</span>6903803  Atticus Wu  progress: mac-mini 2026-11-07T13:47</div>
+            </div>
+            <div class="step">
+              <div class="step-title">dashboard.yml 重建儀表板<span class="when">13:47 + 15 秒</span></div>
+              <div class="step-desc">handoff 變了就觸發。產出 data.js 推到公開倉庫，baton.atticus.tw/projects/ 顯示新的 updated。</div>
+              <div class="mock"><span class="mock-label">projects/data.json · 節錄</span>{ "slug": "baton", "owner": "mac-mini", "updated": "2026-11-07T13:47+08:00",
+  "tasks": [ { "text": "使用者：建 fine-grained PAT…", "done": false, "line": 18 }, … ] }</div>
+            </div>
+            <div class="step">
+              <div class="step-title">儀表板輸入列：交給 Claude<span class="when">15:46</span></div>
+              <div class="step-desc">對「跑 claude setup-token」那則送出「已完成，請打勾並記錄」。開了 Issue #2，claude-task.yml 讓 Claude 改檔、commit，回覆後關閉 Issue。</div>
+              <div class="mock"><span class="mock-label">commit ea2f6ed · baton-claude[bot]</span><span class="dim">- [ ] 使用者：在登入過的機器跑 `claude setup-token`…</span>
+<span class="chg">+ [x] 使用者：在登入過的機器跑 `claude setup-token`…</span>
+updated: <span class="chg">2026-11-07T15:46+08:00</span>
+<span class="dim">## progress.md 末尾多了「## 2026-11-07 15:46 · cloud · GitHub Actions」，註明來源 Issue #2</span></div>
+            </div>
+            <div class="step">
+              <div class="step-title">儀表板勾選框：直接寫回<span class="when">16:16</span></div>
+              <div class="step-desc">使用者在網頁上勾「建 fine-grained PAT」。瀏覽器用 token 讀 handoff.md、核對同一行、改成 [x]、PUT 回 main。</div>
+              <div class="mock"><span class="mock-label">commit 71ba20e · atticuswu</span><span class="dim">- [ ] 使用者：建 fine-grained PAT（只給 Baton 的 Contents＋Issues 讀寫）…</span>
+<span class="chg">+ [x] 使用者：建 fine-grained PAT（只給 Baton 的 Contents＋Issues 讀寫）…</span>
+updated: <span class="chg">2026-11-07T16:16+08:00</span></div>
+            </div>
+            <div class="step">
+              <div class="step-title">另一台接棒<span class="when">下次開 session</span></div>
+              <div class="step-desc">MacBook Air 開 session，pull 到 16:16 的 handoff。接手就把 owner 改成自己，之後的 progress 段落標 macbook-air。</div>
+              <div class="mock"><span class="mock-label">handoff.md · 接手後</span>owner: <span class="chg">macbook-air</span>
+next: MacBook Air 與 Groq bot 主機各 clone 一次並跑 install.sh，三台跑一輪接力
+updated: 2026-11-07T16:16+08:00</div>
+            </div>
+          </div>
+          <div class="highlight-box mt">
+            整天下來 handoff.md 被三種角色改過：Mac mini 的 session、Actions 裡的 Claude、網頁上的你。三者寫的都是 main 上同一個檔案，所以任何一台機器下次開 session 都拿得到完整的現況。
+          </div>
+        </section>
+
+        <!-- 05 常見誤解 -->
+        <section id="myth">
+          <div class="sec-head">
+            <span class="sec-idx">05</span>
+            <div>
+              <h2>常見誤解</h2>
+              <div class="sec-sub">你以為是這樣，其實是那樣</div>
+            </div>
+          </div>
+          <div class="g2">
+            <div class="myth">
+              <div class="m-wrong"><div class="h">常見的理解</div><div class="body">儀表板是另一份資料，勾了要再同步回專案。</div></div>
+              <div class="m-right"><div class="h">實際上</div><div class="body">儀表板只是 main 上 handoff.md 的投影。勾選就是改那個檔案並 commit，沒有第二份資料要對。</div></div>
+            </div>
+            <div class="myth">
+              <div class="m-wrong"><div class="h">常見的理解</div><div class="body">程式碼也要搬進 Baton 才算納管。</div></div>
+              <div class="m-right"><div class="h">實際上</div><div class="body">大型程式碼留在自己的倉庫，Baton 只放三個控制檔。程式碼倉庫的 CLAUDE.md 加一行匯入交接單，開 session 一樣讀得到。</div></div>
+            </div>
+            <div class="myth">
+              <div class="m-wrong"><div class="h">常見的理解</div><div class="body">兩台機器可以同時做同一個專案，git 會幫忙合併。</div></div>
+              <div class="m-right"><div class="h">實際上</div><div class="body">progress.md 可以兩邊同時追加；handoff.md 不行，撞到就停住等人解。所以才有 owner 欄：同一時間只有一台持棒。</div></div>
+            </div>
+            <div class="myth">
+              <div class="m-wrong"><div class="h">常見的理解</div><div class="body">輸入列送出的指示要等某台機器醒著才會處理。</div></div>
+              <div class="m-right"><div class="h">實際上</div><div class="body">處理的是 GitHub Actions 裡的 Claude，不靠任何一台機器。兩三分鐘內 Issue 底下會有回覆與 commit 連結。</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 06 邊界 -->
+        <section id="bound">
+          <div class="sec-head">
+            <span class="sec-idx">06</span>
+            <div>
+              <h2>邊界</h2>
+              <div class="sec-sub">什麼時候不適用、什麼時候會壞</div>
+            </div>
+          </div>
+          <div class="g2">
+            <div class="bound"><span class="ico">!</span><div><b>儀表板是公開的</b><div class="why">任何專案的 handoff.md 全文與 progress.md 最近 8 段都會出現在 baton.atticus.tw。帳號、金額、私人資訊不要寫進這兩個檔。要保護得換託管。</div></div></div>
+            <div class="bound"><span class="ico">!</span><div><b>Stop hook 對這台機器上所有 session 都會觸發</b><div class="why">別的 session 一結束回合，sync.sh 就把 Baton 工作區當下的狀態全部 commit 推走。在 Baton 裡做半途的改動要一氣呵成。</div></div></div>
+            <div class="bound"><span class="ico">!</span><div><b>Actions 裡的 Claude 看不到任何硬碟</b><div class="why">它只有這個倉庫，只准動該專案資料夾。要它建倉庫、裝 hooks、碰本機檔案做不到，那是「機器互連」待辦要解的事。</div></div></div>
+            <div class="bound"><span class="ico">!</span><div><b>寫回的 commit 直接進 main</b><div class="why">某台機器若有還沒 commit 的 handoff.md 改動，下次 SessionStart 的 pull --rebase 可能撞到。撞到會停下來，不會自動解。</div></div></div>
+            <div class="bound"><span class="ico">!</span><div><b>handoff.md 40 行、progress 只追加</b><div class="why">交接單超過 40 行就不是交接單；舊段落被改掉就不是流水帳。兩條都是人為約定，工具不會擋。</div></div></div>
+            <div class="bound"><span class="ico">!</span><div><b>接棒要等下次開 session</b><div class="why">Baton 不即時推送。另一台正在進行中的 session 不會自己拿到新的 handoff，它開頭讀到什麼就是什麼。</div></div></div>
+          </div>
+        </section>
+
+        <!-- 07 速查 -->
+        <section id="deep">
+          <div class="sec-head">
+            <span class="sec-idx">07</span>
+            <div>
+              <h2>速查</h2>
+              <div class="sec-sub">檔案、指令、憑證放哪。主線讀完就夠用，這裡是要動手時翻的</div>
+            </div>
+          </div>
+          <details class="reveal">
+            <summary>每個專案的三個控制檔，各自的規則<span class="tag">檔案</span></summary>
+            <div class="reveal-body">
+              <table class="tbl">
+                <colgroup><col style="width:22%"><col style="width:18%"><col style="width:60%"></colgroup>
+                <thead><tr><th>檔案</th><th>性質</th><th>規則</th></tr></thead>
+                <tbody>
+                  <tr><td data-k="檔案"><code>CLAUDE.md</code></td><td data-k="性質">規則</td><td data-k="規則">第一行 <code>@handoff.md</code> 匯入交接單；只放規則不放狀態，少改</td></tr>
+                  <tr><td data-k="檔案"><code>handoff.md</code></td><td data-k="性質">現況</td><td data-k="規則">整份覆寫，40 行以內；front matter 給儀表板讀；「下一步」勾選框就是儀表板任務</td></tr>
+                  <tr><td data-k="檔案"><code>progress.md</code></td><td data-k="性質">流水帳</td><td data-k="規則">只追加；段落標題「日期 時間 · 機器代號 · 工具」；merge=union 保護雙邊追加</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+          <details class="reveal">
+            <summary>指令與腳本<span class="tag">指令</span></summary>
+            <div class="reveal-body">
+              <table class="tbl">
+                <colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+                <thead><tr><th>指令</th><th>做什麼</th></tr></thead>
+                <tbody>
+                  <tr><td data-k="指令"><code>/wrap</code></td><td data-k="做什麼">收工：追加 progress、改寫 handoff、跑 sync.sh</td></tr>
+                  <tr><td data-k="指令"><code>/new-project slug 中文名 分類</code></td><td data-k="做什麼">開新專案：建資料夾、登記 projects.yaml、陪你填 CLAUDE.md 與第一版 handoff</td></tr>
+                  <tr><td data-k="指令"><code>scripts/install.sh 機器代號</code></td><td data-k="做什麼">一台機器裝一次：hooks 合併進使用者層設定、連結指令、寫本機代號</td></tr>
+                  <tr><td data-k="指令"><code>scripts/sync.sh</code></td><td data-k="做什麼">Stop hook 呼叫：有改動才 commit、pull --rebase、push；互斥鎖防兩份同時跑</td></tr>
+                  <tr><td data-k="指令"><code>scripts/build-dashboard.py</code></td><td data-k="做什麼">掃所有 handoff 與 progress 產出 dashboard/projects/data.js</td></tr>
+                </tbody>
+              </table>
+              <p>完整的新專案啟動流程與搬既有專案的做法在倉庫的 <code>baton/docs/new-project-flow.md</code>。</p>
+            </div>
+          </details>
+          <details class="reveal">
+            <summary>憑證放哪，各管什麼<span class="tag">憑證</span></summary>
+            <div class="reveal-body">
+              <table class="tbl">
+                <colgroup><col style="width:34%"><col style="width:30%"><col style="width:36%"></colgroup>
+                <thead><tr><th>憑證</th><th>放哪</th><th>給誰用</th></tr></thead>
+                <tbody>
+                  <tr><td data-k="憑證">GitHub fine-grained token（Baton 的 Contents 與 Issues 讀寫）</td><td data-k="放哪">瀏覽器 localStorage</td><td data-k="給誰用">儀表板的勾選寫回與開 Issue</td></tr>
+                  <tr><td data-k="憑證"><code>CLAUDE_CODE_OAUTH_TOKEN</code></td><td data-k="放哪">Baton 的 Actions secret</td><td data-k="給誰用">claude-task.yml 裡的 Claude Code</td></tr>
+                  <tr><td data-k="憑證"><code>DASHBOARD_DEPLOY_KEY</code></td><td data-k="放哪">Baton 的 Actions secret，公鑰在 baton-dashboard 的 Deploy keys</td><td data-k="給誰用">dashboard.yml 推公開倉庫</td></tr>
+                  <tr><td data-k="憑證">Cloudflare token</td><td data-k="放哪">Mac mini 的 <code>~/.config/cloudflare/token</code></td><td data-k="給誰用">改 atticus.tw 的 DNS（baton 這筆 CNAME）</td></tr>
+                </tbody>
+              </table>
+              <p>值一律不進倉庫、不進儀表板。</p>
+            </div>
+          </details>
+        </section>
+      </div>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap" style="display:flex;justify-content:space-between;gap:calc(16px * var(--dens, 1));flex-wrap:wrap">
+        <span>Baton 接力棒 · 單一專案的目標流程 · 資料來源：atticuswu/Baton 的 baton/handoff.md 與 progress.md（2026-11-07）</span>
+        <a href="#top">回頂部</a>
+      </div>
+    </footer>
+    <script>
+/* 結構圖探索層＋浮動說明窗 — 與 diagram-explore.css 成對，整段內嵌進頁面 body 結尾前的 script 標籤裡。
+ * （本檔任何地方都不能出現 script 的結尾標籤字樣，否則內嵌時瀏覽器會在那裡把腳本切斷。）
+ *
+ * 作者只要：① 圖包在 div.xp[data-explore] 裡；② svg 加 class xplore；
+ * ③ 每個節點 g.node[data-id][data-kind][data-title] 內含 rect.box；
+ * ④ 每條線 g.edge[data-from][data-to][data-label] 內含 path.hit（透明寬）與 path.ln；
+ * ⑤ 線的標籤 g.elabel（文字＝data-label 才能一起變亮）；圖例項 g.lg[data-kind]；
+ * ⑥ 選配：容器內 script[type=application/json].xp-views，內容 [{id,label,focus:[ids],note}]；
+ * ⑦ 選配：每格的說明寫成 template[data-detail="<節點 id>"]（可加 data-tag="等你拍板" 之類的標籤），
+ *    裡面寫一般 HTML；圖外的元素加 data-detail-open="<id>" 也能開同一個窗（id 對到 template 即可）。
+ * 點一格 → 浮動窗上半是這格的說明（沒寫就只有連線資訊），下半是上下游與追線按鈕。
+ * 窗可拖、可換邊、開在所點格子的對面；點窗外任何地方、按 esc 或 ✕ 關閉；手機（≤760px）變底部抽屜。
+ * 深連結：#focus=id / #focus=id&reach=up|down / #route=a~b / #view=id（只作用在第一張圖）。
+ */
+(function () {
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const HINT =
+    "點一格看說明與上下游；<kbd>shift</kbd>＋點第二格找兩格之間的路徑；點圖例可暫時藏掉一類；<kbd>esc</kbd> 關閉";
+  const esc = (s) =>
+    String(s).replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+    );
+
+  // ── 全頁共用的浮動說明窗 ─────────────────────────
+  const panel = document.createElement("aside");
+  panel.className = "xp-panel";
+  panel.hidden = true;
+  panel.setAttribute("aria-label", "說明");
+  panel.innerHTML =
+    '<div class="xp-grip" title="按住拖曳"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>按住這裡拖曳</div>' +
+    '<button class="xp-ibtn xp-flip" type="button" title="換到另一邊" aria-label="換到另一邊"><svg viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></button>' +
+    '<button class="xp-ibtn xp-close" type="button" aria-label="關閉"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
+    '<span class="xp-tag"></span><h3 class="xp-title"></h3><div class="xp-body"></div><div class="xp-nav"></div>';
+  document.body.appendChild(panel);
+  const pTag = panel.querySelector(".xp-tag");
+  const pTitle = panel.querySelector(".xp-title");
+  const pBody = panel.querySelector(".xp-body");
+  const pNav = panel.querySelector(".xp-nav");
+  let owner = null; // 目前佔用窗的那張圖（instance），圖外開窗時為 null
+  let navHandler = null;
+
+  const isSheet = () => window.innerWidth <= 760;
+  let userMoved = false;
+  function resetPos() {
+    ["left", "right", "top", "bottom", "height"].forEach(
+      (k) => (panel.style[k] = ""),
+    );
+  }
+  function setSide(side) {
+    resetPos();
+    if (side === "left") {
+      panel.style.left = "18px";
+      panel.style.right = "auto";
+    }
+    userMoved = false;
+  }
+  function place(anchor) {
+    if (isSheet()) return resetPos();
+    const ar = anchor ? anchor.getBoundingClientRect() : null;
+    const side =
+      ar && ar.left + ar.width / 2 > window.innerWidth / 2 ? "left" : "right";
+    if (!userMoved) return setSide(side);
+    if (!ar) return;
+    const pr = panel.getBoundingClientRect();
+    const overlap = !(
+      ar.right < pr.left ||
+      ar.left > pr.right ||
+      ar.bottom < pr.top ||
+      ar.top > pr.bottom
+    );
+    if (overlap) setSide(side);
+  }
+  function findTemplate(id, scope) {
+    const sel = 'template[data-detail="' + CSS.escape(id) + '"]';
+    return (scope && scope.querySelector(sel)) || document.querySelector(sel);
+  }
+  // 開窗：title、tag、說明（template 或 fallback 字串）、下半部導覽（HTML 字串＋點擊處理）
+  function openPanel(o) {
+    pTag.textContent = o.tag || "";
+    pTag.hidden = !o.tag;
+    pTitle.textContent = o.title || "";
+    pBody.textContent = "";
+    if (o.template) pBody.appendChild(o.template.content.cloneNode(true));
+    else if (o.fallback)
+      pBody.innerHTML = '<p class="xp-dim">' + o.fallback + "</p>";
+    pNav.innerHTML = o.nav || "";
+    pNav.hidden = !o.nav;
+    navHandler = o.onNav || null;
+    // 換到另一張圖（或圖外開窗）時，把前一張圖的聚焦變暗清掉
+    if (owner && owner !== (o.owner || null)) owner.reset();
+    owner = o.owner || null;
+    const wasHidden = panel.hidden;
+    panel.hidden = false;
+    if (wasHidden) panel.scrollTop = 0;
+    place(o.anchor || null);
+  }
+  function closePanel() {
+    if (panel.hidden) return;
+    panel.hidden = true;
+    const o = owner;
+    owner = null;
+    navHandler = null;
+    if (o) o.reset();
+  }
+  pNav.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button");
+    if (b && navHandler) navHandler(b);
+  });
+  panel.querySelector(".xp-close").addEventListener("click", closePanel);
+  panel.querySelector(".xp-flip").addEventListener("click", () => {
+    const pr = panel.getBoundingClientRect();
+    setSide(pr.left + pr.width / 2 > window.innerWidth / 2 ? "left" : "right");
+  });
+  const grip = panel.querySelector(".xp-grip");
+  let drag = null;
+  grip.addEventListener("pointerdown", (ev) => {
+    if (isSheet()) return;
+    const r = panel.getBoundingClientRect();
+    drag = { dx: ev.clientX - r.left, dy: ev.clientY - r.top, h: r.height };
+    Object.assign(panel.style, {
+      left: r.left + "px",
+      top: r.top + "px",
+      right: "auto",
+      bottom: "auto",
+      height: r.height + "px",
+    });
+    panel.classList.add("dragging");
+    grip.setPointerCapture(ev.pointerId);
+    ev.preventDefault();
+  });
+  grip.addEventListener("pointermove", (ev) => {
+    if (!drag) return;
+    const w = panel.offsetWidth;
+    const x = Math.min(
+      Math.max(ev.clientX - drag.dx, 8),
+      window.innerWidth - w - 8,
+    );
+    const y = Math.min(
+      Math.max(ev.clientY - drag.dy, 8),
+      window.innerHeight - 120,
+    );
+    panel.style.left = x + "px";
+    panel.style.top = y + "px";
+    panel.style.height =
+      Math.max(220, Math.min(drag.h, window.innerHeight - y - 24)) + "px";
+  });
+  const endDrag = () => {
+    if (!drag) return;
+    drag = null;
+    userMoved = true;
+    panel.classList.remove("dragging");
+  };
+  grip.addEventListener("pointerup", endDrag);
+  grip.addEventListener("pointercancel", endDrag);
+  // 窗開著時把視窗縮到手機寬：清掉桌機留下的座標，抽屜才不會往右凸出
+  window.addEventListener("resize", () => {
+    if (!panel.hidden && isSheet()) {
+      resetPos();
+      userMoved = false;
+    }
+  });
+  // 點窗外任何地方就關。例外：窗本身、開窗按鈕、章節列、圖例、風格設定面板（在這些地方操作不該把窗關掉）；
+  // 節點與線的點擊自己 stopPropagation，換格不會先關再開。
+  // 用事件發生當下的路徑判斷：窗裡的按鈕按下去會重畫導覽區，按鈕本身已被移除，
+  // 用 ev.target.closest 會找不到它屬於窗、誤判成點窗外而把窗關掉。
+  // 評論工具：在窗裡選字留言時，按「評論」不該把窗關掉
+  const KEEP =
+    ".xp-panel, [data-detail-open], .xp-views, svg.xplore .lg, .vt-tw-root, .vt-comment-trigger, .vt-comment-popup";
+  document.addEventListener("click", (ev) => {
+    if (panel.hidden) return;
+    if (ev.composedPath().some((el) => el.matches && el.matches(KEEP))) return;
+    closePanel();
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") {
+      if (!panel.hidden) closePanel();
+      else instances.forEach((i) => i.reset());
+    }
+  });
+  // 圖外元素開窗（例如規格頁的「規則一」「規則二」按鈕）
+  document.querySelectorAll("[data-detail-open]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const id = b.getAttribute("data-detail-open");
+      const t = findTemplate(id, null);
+      if (!t)
+        return console.error(
+          "data-detail-open 找不到對應的 template[data-detail]",
+          id,
+        );
+      instances.forEach((i) => i.clear());
+      openPanel({
+        title: t.getAttribute("data-title") || id,
+        tag: t.getAttribute("data-tag") || "",
+        template: t,
+        anchor: b,
+      });
+    });
+  });
+
+  // ── 每張圖 ─────────────────────────────────────
+  function setup(root, idx) {
+    const svg = root.querySelector("svg.xplore");
+    if (!svg) return null;
+    let views = [];
+    const vj = root.querySelector("script.xp-views");
+    if (vj) {
+      try {
+        views = JSON.parse(vj.textContent);
+      } catch (e) {
+        console.error("xp-views JSON 壞了", e);
+      }
+    }
+    const fig = svg.closest(".figure") || svg;
+    const main = document.createElement("div");
+    main.className = "xp-main";
+    fig.parentNode.insertBefore(main, fig);
+    const viewsBar = document.createElement("div");
+    viewsBar.className = "xp-views";
+    const hintEl = document.createElement("div");
+    hintEl.className = "xp-hint";
+    hintEl.innerHTML = HINT;
+    const noteEl = document.createElement("div");
+    noteEl.className = "xp-note";
+    main.append(viewsBar, hintEl, noteEl, fig);
+    if (!views.length) viewsBar.remove();
+    const uid = "xp" + idx + "-hot";
+    let defs = svg.querySelector("defs");
+    if (!defs) {
+      defs = document.createElementNS(SVGNS, "defs");
+      svg.insertBefore(defs, svg.firstChild);
+    }
+    const mk = document.createElementNS(SVGNS, "marker");
+    mk.setAttribute("id", uid);
+    mk.setAttribute("markerWidth", "8");
+    mk.setAttribute("markerHeight", "6");
+    mk.setAttribute("refX", "7");
+    mk.setAttribute("refY", "3");
+    mk.setAttribute("orient", "auto");
+    const poly = document.createElementNS(SVGNS, "polygon");
+    poly.setAttribute("points", "0 0, 8 3, 0 6");
+    poly.setAttribute("class", "ordbg");
+    mk.appendChild(poly);
+    defs.appendChild(mk);
+
+    const nodes = [...svg.querySelectorAll(".node")],
+      edges = [...svg.querySelectorAll(".edge")];
+    const byId = Object.fromEntries(nodes.map((n) => [n.dataset.id, n]));
+    const out = {},
+      inn = {};
+    nodes.forEach((n) => {
+      out[n.dataset.id] = [];
+      inn[n.dataset.id] = [];
+    });
+    const bad = [];
+    edges.forEach((e) => {
+      if (!byId[e.dataset.from] || !byId[e.dataset.to]) {
+        bad.push(e.dataset.from + "→" + e.dataset.to);
+        return;
+      }
+      out[e.dataset.from].push(e);
+      inn[e.dataset.to].push(e);
+    });
+    if (bad.length)
+      console.error("探索層：這些線的端點沒有對應的 data-id", bad);
+    const labelOf = {};
+    svg.querySelectorAll(".elabel").forEach((g) => {
+      labelOf[g.textContent.trim()] = g;
+    });
+    edges.forEach((e) => {
+      e._label = labelOf[(e.dataset.label || "").trim()] || null;
+    });
+
+    const state = { focus: null, mode: "focus", view: null };
+    const title = (id) => byId[id].dataset.title || id;
+    function clear() {
+      svg.classList.remove("has-focus");
+      nodes.forEach((n) => {
+        n.classList.remove("on", "is-focus");
+        n.querySelectorAll(".ordwrap").forEach((x) => x.remove());
+      });
+      edges.forEach((e) => {
+        e.classList.remove("on");
+        e.querySelector(".ln").style.markerEnd = "";
+        e._label && e._label.classList.remove("on");
+      });
+    }
+    const lightNodes = (ids) =>
+      ids.forEach((id) => byId[id] && byId[id].classList.add("on"));
+    function lightEdge(e) {
+      e.classList.add("on");
+      e.querySelector(".ln").style.markerEnd = "url(#" + uid + ")";
+      e._label && e._label.classList.add("on");
+    }
+    function reach(id, dir) {
+      const seen = new Set([id]),
+        q = [id],
+        es = [];
+      while (q.length) {
+        const c = q.shift();
+        (dir === "down" ? out[c] : inn[c]).forEach((e) => {
+          es.push(e);
+          const n = dir === "down" ? e.dataset.to : e.dataset.from;
+          if (!seen.has(n)) {
+            seen.add(n);
+            q.push(n);
+          }
+        });
+      }
+      return { nodes: [...seen], edges: es };
+    }
+    function path(a, b) {
+      const prev = { [a]: null },
+        q = [a];
+      while (q.length) {
+        const c = q.shift();
+        if (c === b) break;
+        for (const e of out[c]) {
+          const n = e.dataset.to;
+          if (!(n in prev)) {
+            prev[n] = { from: c, edge: e };
+            q.push(n);
+          }
+        }
+      }
+      if (!(b in prev)) return null;
+      const steps = [];
+      let c = b;
+      while (prev[c]) {
+        steps.unshift(prev[c]);
+        c = prev[c].from;
+      }
+      return steps;
+    }
+    const setHash = (h) => {
+      if (idx === 0)
+        history.replaceState(
+          null,
+          "",
+          h ? "#" + h : location.pathname + location.search,
+        );
+    };
+    function order(id, i) {
+      const r = byId[id].querySelector(".box");
+      const x = +r.getAttribute("x") || 0,
+        y = +r.getAttribute("y") || 0;
+      const g = document.createElementNS(SVGNS, "g");
+      g.setAttribute("class", "ordwrap");
+      g.innerHTML =
+        '<circle class="ordbg" cx="' +
+        x +
+        '" cy="' +
+        y +
+        '" r="9"/><text class="ord" x="' +
+        x +
+        '" y="' +
+        (y + 3.5) +
+        '" text-anchor="middle">' +
+        i +
+        "</text>";
+      byId[id].appendChild(g);
+    }
+    function setActiveView(id) {
+      viewsBar
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.toggle("active", b.dataset.view === id));
+    }
+    const btn = (act, text, extra) =>
+      '<button type="button" data-act="' +
+      act +
+      '"' +
+      (extra || "") +
+      ">" +
+      text +
+      "</button>";
+    function onNav(b) {
+      const a = b.dataset.act;
+      if (a === "clear") closePanel();
+      else if (a === "up" || a === "down") showReach(state.focus, a);
+      else if (a === "back") showFocus(state.focus);
+      else if (a === "route") {
+        state.mode = "route";
+        b.classList.add("active");
+        noteEl.textContent = "現在點第二格。";
+      } else if (a === "rev") showRoute(b.dataset.a, b.dataset.b);
+      else if (a === "prev" || a === "next") {
+        const i = views.findIndex((v) => v.id === state.view);
+        showView(
+          views[(i + (a === "next" ? 1 : views.length - 1)) % views.length],
+        );
+      }
+    }
+    function open(o) {
+      openPanel(Object.assign({ owner: api, onNav }, o));
+    }
+    function showFocus(id, anchor) {
+      clear();
+      state.focus = id;
+      state.view = null;
+      setActiveView(null);
+      svg.classList.add("has-focus");
+      byId[id].classList.add("on", "is-focus");
+      const up = inn[id].map((e) => e.dataset.from),
+        down = out[id].map((e) => e.dataset.to);
+      lightNodes(up.concat(down));
+      inn[id].concat(out[id]).forEach(lightEdge);
+      const t = findTemplate(id, root);
+      noteEl.textContent = "";
+      open({
+        title: title(id),
+        tag: t ? t.getAttribute("data-tag") || "" : "",
+        template: t,
+        fallback: t ? "" : "這格沒有另外寫說明，下面是它直接相連的格子。",
+        anchor: anchor || byId[id],
+        nav:
+          '<div class="xp-row">上游 ' +
+          up.length +
+          "：" +
+          (esc(up.map(title).join("、")) || "—") +
+          "</div>" +
+          '<div class="xp-row">下游 ' +
+          down.length +
+          "：" +
+          (esc(down.map(title).join("、")) || "—") +
+          "</div>" +
+          '<div class="xp-btns">' +
+          btn("up", "往上游追到底") +
+          btn("down", "往下游追到底") +
+          btn("route", "從這裡找路徑…") +
+          btn("clear", "清除") +
+          "</div>",
+      });
+      setHash("focus=" + id);
+    }
+    function showReach(id, dir) {
+      clear();
+      svg.classList.add("has-focus");
+      byId[id].classList.add("on", "is-focus");
+      const r = reach(id, dir);
+      lightNodes(r.nodes);
+      r.edges.forEach(lightEdge);
+      const others = r.nodes.filter((n) => n !== id);
+      pNav.innerHTML =
+        '<div class="xp-row"><b>' +
+        (dir === "down" ? "下游" : "上游") +
+        "全部 " +
+        others.length +
+        " 格</b>（沿箭頭可達、只看圖上畫出來的關係）</div>" +
+        '<div class="xp-row">' +
+        (esc(others.map(title).join("、")) || "—") +
+        "</div>" +
+        '<div class="xp-btns">' +
+        btn("back", "回到相鄰") +
+        btn("clear", "清除") +
+        "</div>";
+      setHash("focus=" + id + "&reach=" + dir);
+    }
+    function showRoute(a, b) {
+      const st = path(a, b);
+      clear();
+      state.view = null;
+      state.mode = "focus";
+      setActiveView(null);
+      svg.classList.add("has-focus");
+      noteEl.textContent = "";
+      if (!st) {
+        byId[a].classList.add("on");
+        byId[b].classList.add("on");
+        open({
+          title: title(a) + " → " + title(b),
+          fallback: "圖上沒有這個方向的路徑。",
+          anchor: byId[b],
+          nav:
+            '<div class="xp-btns">' +
+            btn(
+              "rev",
+              "反向找",
+              ' data-a="' + esc(b) + '" data-b="' + esc(a) + '"',
+            ) +
+            btn("clear", "清除") +
+            "</div>",
+        });
+        return;
+      }
+      byId[a].classList.add("on", "is-focus");
+      order(a, 1);
+      st.forEach((s, i) => {
+        lightEdge(s.edge);
+        byId[s.edge.dataset.to].classList.add("on");
+        order(s.edge.dataset.to, i + 2);
+      });
+      open({
+        title: title(a) + " → " + title(b),
+        fallback: st.length + " 步，最短有向路徑",
+        anchor: byId[b],
+        nav:
+          "<ol>" +
+          st
+            .map(
+              (s) =>
+                "<li>" +
+                esc(title(s.from)) +
+                ' <span class="xp-dim">' +
+                esc(
+                  s.edge.dataset.label ? "—" + s.edge.dataset.label + "→" : "→",
+                ) +
+                "</span> " +
+                esc(title(s.edge.dataset.to)) +
+                "</li>",
+            )
+            .join("") +
+          '</ol><div class="xp-btns">' +
+          btn("clear", "清除") +
+          "</div>",
+      });
+      setHash("route=" + a + "~" + b);
+    }
+    function showView(v) {
+      clear();
+      state.view = v.id;
+      svg.classList.add("has-focus");
+      lightNodes(v.focus);
+      const set = new Set(v.focus);
+      edges.forEach((e) => {
+        if (set.has(e.dataset.from) && set.has(e.dataset.to)) lightEdge(e);
+      });
+      setActiveView(v.id);
+      noteEl.textContent = v.note || "";
+      open({
+        title: v.label,
+        fallback: "這一章點亮 " + v.focus.length + " 格",
+        anchor: viewsBar,
+        nav:
+          "<ul>" +
+          v.focus
+            .filter((id) => byId[id])
+            .map((id) => "<li>" + esc(title(id)) + "</li>")
+            .join("") +
+          "</ul>" +
+          '<div class="xp-btns">' +
+          btn("prev", "上一章") +
+          btn("next", "下一章") +
+          btn("clear", "清除") +
+          "</div>",
+      });
+      setHash("view=" + v.id);
+    }
+    function reset() {
+      clear();
+      state.focus = null;
+      state.view = null;
+      state.mode = "focus";
+      setActiveView(null);
+      noteEl.textContent = "";
+      setHash("");
+    }
+
+    views.forEach((v) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.view = v.id;
+      b.textContent = v.label;
+      b.addEventListener("click", () => showView(v));
+      viewsBar.appendChild(b);
+    });
+    nodes.forEach((n) => {
+      n.setAttribute("tabindex", "0");
+      n.setAttribute("role", "button");
+      n.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const id = n.dataset.id;
+        if (
+          (ev.shiftKey || state.mode === "route") &&
+          state.focus &&
+          state.focus !== id &&
+          owner === api
+        ) {
+          state.mode = "focus";
+          showRoute(state.focus, id);
+        } else showFocus(id, n);
+      });
+      n.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          n.click();
+        }
+      });
+    });
+    edges.forEach((e) => {
+      e.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        clear();
+        state.view = null;
+        setActiveView(null);
+        svg.classList.add("has-focus");
+        lightEdge(e);
+        byId[e.dataset.from].classList.add("on");
+        byId[e.dataset.to].classList.add("on");
+        open({
+          title: title(e.dataset.from) + " → " + title(e.dataset.to),
+          fallback: esc(e.dataset.label || "（無標籤）"),
+          anchor: e,
+          nav: '<div class="xp-btns">' + btn("clear", "清除") + "</div>",
+        });
+      });
+    });
+    svg.querySelectorAll(".lg").forEach((l) => {
+      l.addEventListener("click", () => {
+        const k = l.dataset.kind;
+        l.classList.toggle("off");
+        const off = l.classList.contains("off");
+        nodes.forEach((n) => {
+          if (n.dataset.kind === k) n.classList.toggle("off", off);
+        });
+      });
+    });
+    const api = {
+      applyHash() {
+        const h = new URLSearchParams(location.hash.slice(1));
+        if (h.get("view")) {
+          const v = views.find((v) => v.id === h.get("view"));
+          v ? showView(v) : reset();
+        } else if (h.get("route")) {
+          const [a, b] = h.get("route").split("~");
+          byId[a] && byId[b] ? showRoute(a, b) : reset();
+        } else if (h.get("focus") && byId[h.get("focus")]) {
+          showFocus(h.get("focus"));
+          if (h.get("reach")) showReach(h.get("focus"), h.get("reach"));
+        }
+      },
+      reset,
+      clear,
+    };
+    return api;
+  }
+
+  const instances = [...document.querySelectorAll("[data-explore]")]
+    .map(setup)
+    .filter(Boolean);
+  if (!instances.length) return;
+  instances[0].applyHash();
+  window.addEventListener("hashchange", () => instances[0].applyHash());
+})();
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 全頁評論系統 — 預設內建、可手動移除                       -->
+    <!-- 完整 snippet 見 references/interaction-patterns.md       -->
+    <!-- § 全頁評論系統（page-wide commenting，預設內建）         -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <style>
+      .vt-comment-trigger {
+        position: fixed;
+        z-index: 9998;
+        background: var(--paper);
+        border: 1.5px solid var(--clay);
+        border-radius: 999px;
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        font-size: calc(12px * var(--fs, 1));
+        color: var(--clay);
+        font-family: var(--mono);
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(20, 20, 19, 0.12);
+        display: none;
+        align-items: center;
+        gap: calc(6px * var(--dens, 1));
+        transition: all 0.15s;
+      }
+      .vt-comment-trigger:hover {
+        background: var(--clay);
+        color: var(--paper);
+      }
+      .vt-comment-popup {
+        position: fixed;
+        z-index: 9999;
+        background: var(--paper);
+        border: 1.5px solid var(--g300);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(20, 20, 19, 0.15);
+        padding: calc(14px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        width: 340px;
+        display: none;
+      }
+      .vt-comment-popup .quote {
+        background: var(--g100);
+        border-left: 3px solid var(--clay);
+        padding: calc(8px * var(--dens, 1)) calc(10px * var(--dens, 1));
+        font-size: calc(12.5px * var(--fs, 1));
+        color: var(--g700);
+        line-height: 1.45;
+        margin-bottom: calc(10px * var(--dens, 1));
+        max-height: 80px;
+        overflow-y: auto;
+      }
+      .vt-comment-popup textarea {
+        width: 100%;
+        border: 1.5px solid var(--g300);
+        border-radius: 8px;
+        padding: calc(8px * var(--dens, 1)) calc(10px * var(--dens, 1));
+        font-size: calc(13px * var(--fs, 1));
+        font-family: var(--sans);
+        resize: vertical;
+        min-height: 60px;
+        color: var(--slate);
+        box-sizing: border-box;
+      }
+      .vt-comment-popup textarea:focus {
+        outline: none;
+        border-color: var(--clay);
+      }
+      .vt-comment-popup .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: calc(10px * var(--dens, 1));
+        font-size: calc(11.5px * var(--fs, 1));
+      }
+      .vt-comment-popup .hint {
+        color: var(--g500);
+        font-family: var(--mono);
+      }
+      .vt-comment-popup button.send {
+        background: var(--clay);
+        color: var(--paper);
+        border: none;
+        border-radius: 8px;
+        padding: calc(6px * var(--dens, 1)) calc(14px * var(--dens, 1));
+        font-size: calc(12.5px * var(--fs, 1));
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .vt-comment-popup button.send:hover {
+        background: var(--clay-d);
+      }
+      .vt-comment-popup button.cancel {
+        background: transparent;
+        border: 1px solid var(--g300);
+        color: var(--g500);
+        border-radius: 8px;
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        font-size: calc(12.5px * var(--fs, 1));
+        cursor: pointer;
+        margin-right: calc(8px * var(--dens, 1));
+      }
+      mark.vt-comment-mark {
+        background: var(--oat);
+        padding: 0 calc(2px * var(--dens, 1));
+        border-radius: 2px;
+        cursor: pointer;
+      }
+      mark.vt-comment-mark:hover {
+        background: #d5c4a8;
+      }
+      .vt-comment-pill {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 9990;
+        background: var(--paper);
+        border: 1.5px solid var(--clay);
+        border-radius: 999px;
+        padding: calc(8px * var(--dens, 1)) calc(14px * var(--dens, 1));
+        font-family: var(--mono);
+        font-size: calc(12px * var(--fs, 1));
+        color: var(--clay);
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(20, 20, 19, 0.1);
+        display: none;
+        align-items: center;
+        gap: calc(6px * var(--dens, 1));
+        transition: all 0.15s;
+      }
+      .vt-comment-pill.is-active {
+        display: inline-flex;
+      }
+      .vt-comment-pill:hover {
+        background: var(--clay);
+        color: var(--paper);
+      }
+      .vt-comment-pill strong {
+        font-weight: 600;
+      }
+      .vt-comment-list {
+        position: fixed;
+        right: 16px;
+        bottom: 60px;
+        width: 360px;
+        max-height: 60vh;
+        z-index: 9991;
+        background: var(--paper);
+        border: 1.5px solid var(--g300);
+        border-radius: 14px;
+        box-shadow: 0 12px 32px rgba(20, 20, 19, 0.15);
+        display: none;
+        flex-direction: column;
+      }
+      .vt-comment-list.is-open {
+        display: flex;
+      }
+      .vt-comment-list-header {
+        background: var(--paper);
+        border-bottom: 1.5px solid var(--g200);
+        padding: calc(12px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        font-family: var(--mono);
+        font-size: calc(11px * var(--fs, 1));
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--g500);
+        font-weight: 600;
+        border-radius: 14px 14px 0 0;
+      }
+      .vt-comment-list-items {
+        overflow-y: auto;
+        flex: 1;
+      }
+      .vt-comment-item {
+        padding: calc(12px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        border-bottom: 1px solid var(--g200);
+      }
+      .vt-comment-item:last-child {
+        border-bottom: none;
+      }
+      .vt-comment-item .item-quote {
+        font-size: calc(11.5px * var(--fs, 1));
+        color: var(--g500);
+        font-style: italic;
+        border-left: 2px solid var(--oat);
+        padding-left: calc(8px * var(--dens, 1));
+        line-height: 1.4;
+        margin-bottom: calc(6px * var(--dens, 1));
+      }
+      .vt-comment-item .item-body {
+        font-size: calc(13px * var(--fs, 1));
+        color: var(--slate);
+        line-height: 1.5;
+      }
+      .vt-comment-item .item-del {
+        font-size: calc(11px * var(--fs, 1));
+        color: var(--g500);
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-top: calc(4px * var(--dens, 1));
+        padding: 0;
+        font-family: inherit;
+      }
+      .vt-comment-item .item-del:hover {
+        color: var(--red);
+      }
+      .vt-comment-list-footer {
+        border-top: 1.5px solid var(--g200);
+        padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        display: flex;
+        justify-content: space-between;
+        gap: calc(8px * var(--dens, 1));
+        border-radius: 0 0 14px 14px;
+        background: var(--g100);
+      }
+      .vt-comment-list-footer button {
+        background: transparent;
+        border: 1.5px solid var(--g300);
+        border-radius: 8px;
+        padding: calc(6px * var(--dens, 1)) calc(12px * var(--dens, 1));
+        font-size: calc(12px * var(--fs, 1));
+        color: var(--g700);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .vt-comment-list-footer button:hover {
+        border-color: var(--slate);
+        color: var(--slate);
+      }
+      .vt-comment-list-footer button.copy {
+        background: var(--clay);
+        color: var(--paper);
+        border-color: var(--clay);
+      }
+      .vt-comment-list-footer button.copy:hover {
+        background: var(--clay-d);
+      }
+      body.vt-has-existing-export .vt-comment-list-footer button.copy {
+        display: none;
+      }
+    </style>
+    <button class="vt-comment-trigger" id="vt-comment-trigger">💬 評論</button>
+    <div class="vt-comment-popup" id="vt-comment-popup">
+      <div class="quote" id="vt-popup-quote"></div>
+      <textarea
+        id="vt-popup-textarea"
+        placeholder="對這段文字的評論 / 疑問 / 補充..."
+      ></textarea>
+      <div class="actions">
+        <span class="hint">⌘ + Enter 送出 · Esc 取消</span>
+        <div>
+          <button class="cancel" id="vt-popup-cancel">取消</button
+          ><button class="send" id="vt-popup-send">送出</button>
+        </div>
+      </div>
+    </div>
+    <button class="vt-comment-pill" id="vt-comment-pill">
+      💬 <strong id="vt-count">0</strong>
+    </button>
+    <div class="vt-comment-list" id="vt-comment-list">
+      <div class="vt-comment-list-header">— 我的評論</div>
+      <div class="vt-comment-list-items" id="vt-comment-list-items"></div>
+      <div class="vt-comment-list-footer">
+        <button id="vt-clear-all">全部清除</button>
+        <button class="copy" id="vt-copy-fallback">📋 複製評論</button>
+      </div>
+    </div>
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 共用複製工具 — file:// 下瀏覽器停用 navigator.clipboard，   -->
+    <!-- 一定會落到 execCommand 備援；備援也可能失敗，必須誠實回報   -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <script>
+      // 三段式：clipboard API → execCommand 備援 → 都失敗回 false（不假報成功）
+      window.vtCopyText = async function (text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (err) {
+            // 落到 execCommand 備援
+          }
+        }
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        try {
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          return document.execCommand("copy") === true;
+        } catch (err) {
+          return false;
+        } finally {
+          ta.remove();
+        }
+      };
+
+      // 複製失敗時的出路：把文字放進可選取區域並全選，使用者按一次 Cmd+C 即可
+      // target 有給就用頁面既有的預覽區（wrap 為它的外層、會自動展開）；
+      // 沒有預覽區就建一個臨時可選取區（雙擊可關閉）。
+      window.vtSelectForManualCopy = function (text, target, wrap) {
+        let node = target;
+        if (node) {
+          node.textContent = text;
+          if (wrap) wrap.classList.remove("hidden");
+        } else {
+          node = document.getElementById("vt-manual-copy-box");
+          if (!node) {
+            node = document.createElement("pre");
+            node.id = "vt-manual-copy-box";
+            node.title = "雙擊關閉";
+            node.style.cssText =
+              "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10000;" +
+              "max-width:min(720px,92vw);max-height:40vh;overflow:auto;white-space:pre-wrap;" +
+              "background:#fff;color:#111;border:1.5px solid #999;border-radius:10px;" +
+              "padding:14px 16px;font-size:12.5px;line-height:1.6;" +
+              "box-shadow:0 12px 40px rgba(0,0,0,.28)";
+            node.addEventListener("dblclick", function () {
+              node.remove();
+            });
+            document.body.appendChild(node);
+          }
+          node.textContent = text;
+        }
+        node.scrollIntoView({ block: "nearest" });
+        const sel = window.getSelection();
+        if (sel) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        return node;
+      };
+    </script>
+
+    <script>
+      (function () {
+        const S = "vt-comments-" + location.pathname,
+          L = 80;
+        let c = JSON.parse(localStorage.getItem(S) || "[]"),
+          sel = null;
+        const $ = (i) => document.getElementById(i),
+          tr = $("vt-comment-trigger"),
+          p = $("vt-comment-popup"),
+          pq = $("vt-popup-quote"),
+          pt = $("vt-popup-textarea"),
+          pi = $("vt-comment-pill"),
+          ce = $("vt-count"),
+          le = $("vt-comment-list"),
+          li = $("vt-comment-list-items");
+        window.vtCollectComments = function () {
+          if (!c.length) return "";
+          return (
+            "\n\n---\n\n" +
+            c
+              .map((x) => {
+                const q =
+                  x.quote.length > L ? x.quote.slice(0, L) + "…" : x.quote;
+                return `@評論「${q}」\n  → ${x.body}`;
+              })
+              .join("\n\n")
+          );
+        };
+        function hs(e) {
+          if (
+            e.target.closest(
+              ".vt-comment-popup,.vt-comment-trigger,.vt-comment-pill,.vt-comment-list,button,input,select,textarea",
+            )
+          )
+            return;
+          setTimeout(() => {
+            const s = getSelection(),
+              t = s.toString().trim();
+            if (!t || t.length < 2) {
+              tr.style.display = "none";
+              return;
+            }
+            const r = s.getRangeAt(0),
+              b = r.getBoundingClientRect();
+            sel = { text: t, range: r.cloneRange() };
+            tr.style.display = "inline-flex";
+            tr.style.top = Math.max(8, b.top - 38) + "px";
+            tr.style.left = Math.max(8, b.left + b.width / 2 - 40) + "px";
+          }, 10);
+        }
+        document.addEventListener("mouseup", hs);
+        document.addEventListener("touchend", hs);
+        tr.addEventListener("click", op);
+        function op() {
+          if (!sel) return;
+          const q = sel.text.length > L ? sel.text.slice(0, L) + "…" : sel.text;
+          pq.textContent = q;
+          pt.value = "";
+          const t = tr.getBoundingClientRect();
+          let l = t.left;
+          if (l + 340 > innerWidth - 16) l = innerWidth - 356;
+          let to = t.bottom + 6;
+          if (to + 220 > innerHeight) to = t.top - 230;
+          p.style.left = Math.max(8, l) + "px";
+          p.style.top = Math.max(8, to) + "px";
+          tr.style.display = "none";
+          p.style.display = "block";
+          setTimeout(() => pt.focus(), 50);
+        }
+        $("vt-popup-cancel").addEventListener("click", cp);
+        $("vt-popup-send").addEventListener("click", sc);
+        pt.addEventListener("keydown", (e) => {
+          if (e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            e.stopPropagation();
+            sc();
+          }
+          if (e.key === "Escape") cp();
+        });
+        function cp() {
+          p.style.display = "none";
+          sel = null;
+        }
+        function sc() {
+          const b = pt.value.trim();
+          if (!b || !sel) return cp();
+          const id = "c-" + Date.now(),
+            q = sel.text;
+          try {
+            const m = document.createElement("mark");
+            m.className = "vt-comment-mark";
+            m.dataset.commentId = id;
+            sel.range.surroundContents(m);
+          } catch (e) {}
+          c.push({ id, quote: q, body: b, ts: Date.now() });
+          ps();
+          rn();
+          cp();
+          getSelection().removeAllRanges();
+        }
+        function ps() {
+          localStorage.setItem(S, JSON.stringify(c));
+        }
+        function rn() {
+          ce.textContent = c.length;
+          pi.classList.toggle("is-active", c.length > 0);
+          if (!c.length) le.classList.remove("is-open");
+          li.innerHTML = c
+            .map((x) => {
+              const q =
+                x.quote.length > 60 ? x.quote.slice(0, 60) + "…" : x.quote;
+              return `<div class="vt-comment-item" data-id="${x.id}"><div class="item-quote">「${eh(q)}」</div><div class="item-body">${eh(x.body)}</div><button class="item-del" data-del="${x.id}">刪除</button></div>`;
+            })
+            .join("");
+          li.querySelectorAll("[data-del]").forEach((b) =>
+            b.addEventListener("click", () => dc(b.dataset.del)),
+          );
+        }
+        function dc(id) {
+          c = c.filter((x) => x.id !== id);
+          document
+            .querySelectorAll(`mark.vt-comment-mark[data-comment-id="${id}"]`)
+            .forEach((m) => {
+              const pr = m.parentNode;
+              while (m.firstChild) pr.insertBefore(m.firstChild, m);
+              pr.removeChild(m);
+              pr.normalize();
+            });
+          ps();
+          rn();
+        }
+        function eh(s) {
+          return String(s).replace(
+            /[&<>"']/g,
+            (ch) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[ch],
+          );
+        }
+        pi.addEventListener("click", () => le.classList.toggle("is-open"));
+        $("vt-clear-all").addEventListener("click", () => {
+          if (!c.length) return;
+          if (!confirm("確定清除全部 " + c.length + " 條評論？")) return;
+          document.querySelectorAll("mark.vt-comment-mark").forEach((m) => {
+            const pr = m.parentNode;
+            while (m.firstChild) pr.insertBefore(m.firstChild, m);
+            pr.removeChild(m);
+            pr.normalize();
+          });
+          c = [];
+          ps();
+          rn();
+        });
+        $("vt-copy-fallback").addEventListener("click", async (e) => {
+          if (!c.length) return;
+          const t = window.vtCollectComments().replace(/^\n\n---\n\n/, ""),
+            b = e.currentTarget,
+            o = b.textContent;
+          const ok = await window.vtCopyText(t);
+          if (ok) {
+            b.textContent = "✅ 已複製";
+          } else {
+            // 複製不到就不假報成功：把評論放進臨時區域並全選
+            window.vtSelectForManualCopy(t);
+            b.textContent = "已選取 → 請按 Cmd+C";
+          }
+          setTimeout(() => (b.textContent = o), ok ? 2000 : 6000);
+        });
+        setTimeout(() => {
+          if (typeof window.vtBuildDecisionExport === "function")
+            document.body.classList.add("vt-has-existing-export");
+        }, 100);
+        document.addEventListener("click", (e) => {
+          if (
+            p.style.display === "block" &&
+            !e.target.closest(".vt-comment-popup,.vt-comment-trigger")
+          )
+            cp();
+        });
+        rn();
+      })();
+    </script>
+  
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Session 識別 — 多視窗並行時分辨這份是哪個 session 產的     -->
+    <!-- 產出時把 scripts/session-label.sh 的結果填進下面兩個值      -->
+    <!-- 留空 = 整段停用（範本原檔即此狀態）                        -->
+    <!-- 完整說明見 references/session-identity.md                 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <script>
+      window.VT_SESSION = { label: "Baton", id: "04e7bb9e", project: "Baton" };
+    </script>
+    <style>
+      .vt-session-badge {
+        display: flex;
+        align-items: center;
+        gap: calc(9px * var(--dens, 1));
+        padding: calc(5px * var(--dens, 1)) calc(16px * var(--dens, 1));
+        background: var(--vt-session-color, #666);
+        color: #fff;
+        font-family: var(--mono, ui-monospace, monospace);
+        font-size: calc(11.5px * var(--fs, 1));
+        letter-spacing: 0.06em;
+      }
+      .vt-session-badge .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #fff;
+        opacity: 0.85;
+        flex-shrink: 0;
+      }
+      .vt-session-badge .lb {
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .vt-session-badge .id {
+        margin-left: auto;
+        opacity: 0.75;
+      }
+    </style>
+    <script>
+      (function () {
+        const s = window.VT_SESSION || {};
+        if (!s.label) return;
+        const seed = s.id || s.label;
+        let hue = 7;
+        for (const c of seed) hue = (hue * 31 + c.charCodeAt(0)) % 360;
+        const col = `hsl(${hue} 58% 42%)`;
+        document.title = `${s.label} · ${document.title}`;
+        try {
+          const cv = document.createElement("canvas");
+          cv.width = cv.height = 64;
+          const g = cv.getContext("2d");
+          g.fillStyle = col;
+          if (g.roundRect) {
+            g.beginPath();
+            g.roundRect(2, 2, 60, 60, 14);
+            g.fill();
+          } else {
+            g.fillRect(2, 2, 60, 60);
+          }
+          g.fillStyle = "#fff";
+          g.font = '700 38px ui-sans-serif, system-ui, "PingFang TC"';
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+          const ch = (s.label.match(/[A-Za-z0-9\u4e00-\u9fff]/) || ["?"])[0];
+          g.fillText(ch.toUpperCase(), 32, 36);
+          const link = document.createElement("link");
+          link.rel = "icon";
+          link.href = cv.toDataURL();
+          document.head.appendChild(link);
+        } catch (e) {}
+        const b = document.createElement("div");
+        b.className = "vt-session-badge";
+        b.style.setProperty("--vt-session-color", col);
+        b.innerHTML =
+          '<span class="dot"></span><span class="lb"></span><span class="id"></span>';
+        b.querySelector(".lb").textContent = s.label;
+        b.querySelector(".id").textContent = s.id || "";
+        const host = document.querySelector("header") || document.body;
+        host.insertBefore(b, host.firstChild);
+      })();
+    </script>
+  <!-- vt-tweaks:begin v=c10c74fa98 -->
+<style id="vt-tweaks-css">
+/* 風格設定面板 — 與 tweaks.js 成對，由 scripts/stamp.py 在 verify 時注入頁尾（作者不用複製）。
+   字級與間距的倍率靠兩個變數：--fs（字級）、--dens（間距）。stamp.py 會把頁面裡寫死的
+   px 字級與間距改成 calc(原值 * var(--fs|--dens, 1))，這裡只負責「哪些區塊不吃倍率」。 */
+
+/* 不吃倍率：結構圖、畫面樣張（它們是示意畫面，照比例縮放才對）、頁面介面本身
+   （風格設定面板、評論工具、session 徽章；字放到 200% 時還得能把它調回來）、作者手動鎖定的區塊。
+   ⚠️ 要逐一列出，不能用「class 以 vt- 開頭」：評論工具會在 body 加 vt-has-existing-export，
+   前綴比對會把整頁鎖死；被評論標記的文字（vt-comment-mark）也該跟著內文縮放。 */
+svg,
+.mock,
+[data-tw-lock],
+.vt-tw-root,
+.vt-comment-trigger,
+.vt-comment-popup,
+.vt-comment-pill,
+.vt-comment-list,
+.vt-session-badge {
+  --fs: 1;
+  --dens: 1;
+}
+/* 沒宣告字級的頁面（spec-alignment 範本就是）：零權重，任何頁面規則都蓋得過它 */
+:where(body) {
+  font-size: calc(16px * var(--fs, 1));
+}
+/* Tailwind 文字 class 的覆寫由 stamp.py 視頁面需要產生（只在有 Tailwind、倍率≠1 時生效），不放這裡 */
+
+/* ── 面板本體（按鈕與面板都掛 vt-tw-root → 在上面的排除清單裡，不吃倍率）── */
+/* 沒有底部列可停的頁：浮在左下角（右下角是評論工具） */
+.vt-tw-launch {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  gap: calc(5px * var(--dens, 1));
+  font: 600 calc(12px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(5px * var(--dens, 1)) calc(10px * var(--dens, 1));
+  border-radius: 999px;
+  border: 1.5px solid var(--slate, #141413);
+  background: var(--slate, #141413);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(20, 20, 19, 0.2);
+}
+.vt-tw-launch svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+/* 停在底部列「預覽摘要」左邊：外觀跟旁邊的次要按鈕一致，各寬度都停（窄螢幕只顯示圖示，見檔尾） */
+.vt-tw-launch.vt-tw-docked {
+  position: static;
+  display: inline-flex; /* 父層是一般區塊時才不會獨佔一行、把列撐高 */
+  font: 500 calc(14px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(10px * var(--dens, 1)) calc(16px * var(--dens, 1));
+  border-radius: 10px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--slate, #141413);
+  box-shadow: none;
+}
+.vt-tw-launch.vt-tw-docked:hover {
+  border-color: var(--slate, #141413);
+}
+/* 位置（bottom、left／right、max-height）由 tweaks.js 依按鈕位置算 */
+.vt-tw-pop {
+  position: fixed;
+  width: min(330px, 92vw);
+  overflow: auto;
+  z-index: 9100;
+  background: #fff;
+  color: var(--slate, #141413);
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 12px;
+  box-shadow: 0 16px 44px rgba(20, 20, 19, 0.22);
+  padding: calc(14px * var(--dens, 1)) calc(16px * var(--dens, 1)) calc(16px * var(--dens, 1));
+  font: calc(13px * var(--fs, 1))/1.5 var(--sans, system-ui, sans-serif);
+  text-align: left;
+}
+.vt-tw-pop[hidden] {
+  display: none;
+}
+.vt-tw-sec {
+  font: 600 calc(10.5px * var(--fs, 1)) var(--mono, ui-monospace, monospace);
+  color: var(--g500, #87867f);
+  letter-spacing: 0.06em;
+  margin: calc(12px * var(--dens, 1)) 0 calc(6px * var(--dens, 1));
+  padding-top: calc(10px * var(--dens, 1));
+  border-top: 1px solid var(--g200, #e6e3da);
+}
+.vt-tw-sec.vt-tw-first {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+/* 中英切換：面板頂端那行的右邊 */
+.vt-tw-lang {
+  font: 600 calc(11px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  letter-spacing: 0;
+  padding: calc(2px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  border-radius: 6px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--g700, #3d3d3a);
+  cursor: pointer;
+}
+.vt-tw-lang:hover {
+  border-color: var(--slate, #141413);
+}
+.vt-tw-item {
+  margin: calc(8px * var(--dens, 1)) 0;
+}
+.vt-tw-label {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(8px * var(--dens, 1));
+  font-weight: 600;
+  margin-bottom: calc(4px * var(--dens, 1));
+}
+.vt-tw-val {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-weight: 500;
+  color: var(--clay-d, #b85c3e);
+}
+.vt-tw-item input[type="range"] {
+  width: 100%;
+  accent-color: var(--clay, #d97757);
+}
+.vt-tw-seg {
+  display: flex;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vt-tw-seg button {
+  flex: 1;
+  font: calc(12.5px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(5px * var(--dens, 1)) calc(4px * var(--dens, 1));
+  border: 0;
+  border-right: 1px solid var(--g300, #d1cfc5);
+  background: #fff;
+  color: var(--g700, #3d3d3a);
+  cursor: pointer;
+}
+.vt-tw-seg button:last-child {
+  border-right: 0;
+}
+.vt-tw-seg button.vt-tw-on {
+  background: var(--slate, #141413);
+  color: #fff;
+}
+.vt-tw-hint {
+  font-size: calc(11.5px * var(--fs, 1));
+  color: var(--g500, #87867f);
+  line-height: 1.5;
+  margin-top: calc(5px * var(--dens, 1));
+}
+.vt-tw-actions {
+  display: flex;
+  gap: calc(8px * var(--dens, 1));
+  margin-top: calc(14px * var(--dens, 1));
+}
+.vt-tw-actions button {
+  flex: 1;
+  font: calc(12.5px * var(--fs, 1)) var(--sans, system-ui, sans-serif);
+  padding: calc(7px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  border-radius: 8px;
+  border: 1.5px solid var(--g300, #d1cfc5);
+  background: #fff;
+  cursor: pointer;
+}
+.vt-tw-actions button.vt-tw-pri {
+  border-color: var(--clay, #d97757);
+  color: var(--clay-d, #b85c3e);
+  font-weight: 600;
+}
+.vt-tw-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.vt-tw-manual {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: calc(8px * var(--dens, 1));
+  padding: calc(6px * var(--dens, 1)) calc(8px * var(--dens, 1));
+  font: calc(11px * var(--fs, 1))/1.5 var(--mono, ui-monospace, monospace);
+  border: 1.5px solid var(--g300, #d1cfc5);
+  border-radius: 8px;
+  resize: vertical;
+}
+.vt-tw-manual[hidden] {
+  display: none;
+}
+.vt-tw-actions button[aria-pressed="true"] {
+  background: var(--clay-d, #b85c3e);
+  border-color: var(--clay-d, #b85c3e);
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .vt-tw-launch {
+    padding: calc(8px * var(--dens, 1));
+  }
+  .vt-tw-lbl {
+    display: none; /* 手機只留圖示，少蓋一點內容 */
+  }
+}
+/* 範本底部列在 900px 以下擠不下帶字的第三顆鈕：只留圖示、縮內距，高度跟旁邊的按鈕拉齊。
+   約 360px 以下、以及 700px 前後一小段寬度，列仍可能折成兩行（範圍依列上的文字與按鈕字數而定；等於更窄螢幕的版型），接受 */
+@media (max-width: 900px) {
+  .vt-tw-docked .vt-tw-lbl {
+    display: none;
+  }
+  .vt-tw-launch.vt-tw-docked {
+    padding: calc(10px * var(--dens, 1)) calc(11px * var(--dens, 1));
+    align-self: stretch;
+  }
+}
+
+</style>
+<script id="vt-tweaks-js" data-profile-tool="$HOME/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/b831ae40-444b-4d6d-a3c0-56f8b9a5f120/d6b05904-0ac4-49b6-88f1-b27e3b55fe54/skills/html-visualizer/scripts/profile.py">
+/* 風格設定面板 — 與 tweaks.css 成對，由 scripts/stamp.py 在 verify 時注入頁尾（作者不用複製）。
+ * 按鈕「風格設定」：頁面有範本底部列的「預覽摘要」（#preview-btn）就停在它左邊，各寬度都是（窄螢幕只顯示圖示）；
+ * 沒有底部列就固定在左下角（右下角是評論工具的位置）。面板從按鈕上方打開。
+ * 底部列一律用範本的，按鈕不偵測、不閃避頁面自己做的固定列。
+ * （本檔任何地方都不能出現 script 的結尾標籤字樣，否則內嵌時瀏覽器會在那裡把腳本切斷。）
+ *
+ * 固定層（每頁都有）：字級 90%–200%、密度、內容寬度，寫在 <html> 的 --fs／--dens／--wrap-max。
+ * 內容層（作者選配，預設 0 項）：頁面放一個 type 為 application/json、id 為 vt-tweaks 的 script 區塊，
+ *   內容是 [{id,label,options:[[值,顯示],...],hint}]。
+ * 選了之後在 <html> 設 data-tw-<id>="值"，作者只寫對應的 CSS，不寫 JS。hint 必填（這項會改到頁面上的什麼）。
+ * 調過的值只改畫面、不進複製摘要。讀者按「存成我的預設」才產生「設定檔變更」段落（給 AI 執行的一行
+ * profile.py 指令，使用者不用自己跑）：有拍板摘要的頁經 window.vtCollectComments 接進摘要，沒有的頁直接複製。
+ * 介面有中英兩種，面板頂端可切換（「設定檔變更」段落也跟著換語言）。
+ */
+(function () {
+  var root = document.documentElement;
+  var me = document.currentScript;
+  var tool = (me && me.getAttribute("data-profile-tool")) || "profile.py";
+  // 介面語言：讀者切換過就記在瀏覽器、之後的頁沿用；沒切過跟頁面的 lang 走。
+  // 沙盒 iframe（沒開 allow-same-origin）一碰 localStorage 就丟錯，所以包 try
+  var lang = null;
+  try {
+    lang = localStorage.getItem("vt-tw-lang");
+  } catch (e) {}
+  if (lang !== "zh" && lang !== "en") lang = /^en/i.test(root.lang) ? "en" : "zh";
+  var LANG = {
+    zh: {
+      name: "風格設定",
+      short: "風格設定",
+      title: "風格設定（字級、密度、寬度）",
+      fixed: "固定層 · 每頁都有",
+      content: "內容層 · 這頁專屬",
+      swap: "EN",
+      reset: "全部還原",
+      save: "存成我的預設",
+      added: "已加進複製摘要",
+      copied: "已複製，貼回對話即可",
+      select: "已選取，請按 Cmd+C",
+      need: function (n) {
+        return "調過" + n.slice(0, -1).join("、") + "或" + n[n.length - 1] + "，才能存成你的預設。";
+      },
+      undo: "存檔指令已加進這頁的複製摘要，複製後貼回對話即可；再按一次取消。",
+      toSummary: "按下後，存檔指令會加進這頁的複製摘要；貼回對話，AI 會寫進你的設定檔，之後的頁都用這組。",
+      toCopy: "按下後會複製一段指令；貼回對話，AI 會寫進你的設定檔，之後的頁都用這組。",
+      head: "## 設定檔變更\n給 AI：使用者要把這頁的顯示設定存成預設（",
+      pair: "：",
+      join: "、",
+      tail: "）。請執行下面這行寫入 html-visualizer 設定檔，完成後回報前後差異；使用者不用自己跑。\n",
+    },
+    en: {
+      name: "Style settings",
+      short: "Style",
+      title: "Style settings (text size, density, width)",
+      fixed: "Every page",
+      content: "This page only",
+      swap: "中文",
+      reset: "Reset all",
+      save: "Save as my default",
+      added: "Added to summary",
+      copied: "Copied",
+      select: "Press Cmd+C",
+      need: function (n) {
+        n = n.map(function (x) {
+          return x.toLowerCase();
+        });
+        return "Change the " + n.slice(0, -1).join(", ") + " or " + n[n.length - 1] + " to save it as your default.";
+      },
+      undo: "The save command is in this page's copy summary. Copy the summary and paste it into the chat. Click again to remove it.",
+      toSummary: "Adds a save command to this page's copy summary. Paste it into the chat and the AI writes it to your profile; later pages use these settings.",
+      toCopy: "Copies a save command. Paste it into the chat and the AI writes it to your profile; later pages use these settings.",
+      head: "## Profile changes\nFor the AI: the user wants to save this page's display settings as their default (",
+      pair: ": ",
+      join: ", ",
+      tail: "). Run the line below to write them to the html-visualizer profile, then report the before and after values. The user doesn't need to run it.\n",
+    },
+  };
+  var L = LANG[lang];
+  // 固定層的名稱與選項是 {zh, en}；作者寫的內容層（字串或數字）原樣顯示
+  function txt(x) {
+    return x && typeof x === "object" ? x[lang] : x;
+  }
+  var cs = getComputedStyle(root);
+  function cssNum(name, fallback) {
+    var v = parseFloat(cs.getPropertyValue(name));
+    return isNaN(v) ? fallback : v;
+  }
+  var baseFs = cssNum("--fs", 1);
+  var DENS = [
+    ["0.75", { zh: "緊湊", en: "Compact" }, "compact"],
+    ["1", { zh: "標準", en: "Standard" }, "standard"],
+    ["1.3", { zh: "寬鬆", en: "Relaxed" }, "relaxed"],
+  ];
+  var baseDens = String(cssNum("--dens", 1));
+  if (!DENS.some(function (d) { return d[0] === baseDens; })) baseDens = "1";
+  // 內容寬度只在頁面有用 --wrap-max 時提供（範本在 :root 宣告它）；沒宣告的頁按了也不會動，乾脆不顯示
+  var rawWrap = cs.getPropertyValue("--wrap-max").trim();
+  var baseWrap = parseFloat(rawWrap) || 1760;
+  var wrapOpts = [
+    ["1760px", { zh: "滿版", en: "Full" }, "1760"],
+    ["1080px", { zh: "閱讀寬", en: "Reading" }, "1080"],
+  ];
+  if (baseWrap !== 1760 && baseWrap !== 1080) wrapOpts.unshift([baseWrap + "px", { zh: "預設", en: "Default" }, String(baseWrap)]);
+  var FIXED = [
+    { id: "fs", label: { zh: "字級", en: "Text size" }, kind: "range", min: 0.9, max: 2, step: 0.05, def: String(baseFs), css: "--fs", profile: "tokens.type.scale" },
+    { id: "dens", label: { zh: "密度", en: "Density" }, css: "--dens", def: baseDens, profile: "tokens.layout.density", options: DENS },
+  ];
+  if (rawWrap) {
+    FIXED.push({ id: "width", label: { zh: "內容寬度", en: "Width" }, css: "--wrap-max", def: baseWrap + "px", profile: "tokens.layout.maxWidth", options: wrapOpts });
+  }
+  // html.vt-fs：倍率≠1 時才讓 Tailwind 文字 class 的覆寫生效（stamp.py 產生的規則都掛在它底下）
+  root.classList.toggle("vt-fs", baseFs !== 1);
+  var content = [];
+  // 用 querySelector：沒有內容層的頁面本來就沒有這個元素，不該被 verify 的元素參照檢查報成缺漏
+  var decl = document.querySelector("script#vt-tweaks");
+  if (decl) {
+    try {
+      content = JSON.parse(decl.textContent);
+    } catch (e) {
+      console.error("vt-tweaks 宣告不是合法 JSON", e);
+    }
+  }
+  content = content.filter(function (c) {
+    var ok =
+      c && c.id && c.label && Array.isArray(c.options) && c.options.length >= 2;
+    if (!ok) console.error("vt-tweaks 項目缺 id／label／options", c);
+    else if (!c.hint)
+      console.error(
+        "vt-tweaks 項目缺 hint（要寫這項會改到頁面上的什麼）",
+        c.id,
+      );
+    return ok;
+  });
+  if (content.length > 3) {
+    console.error("vt-tweaks 最多 3 項，多的不顯示");
+    content = content.slice(0, 3);
+  }
+  content.forEach(function (c) {
+    c.attr = "data-tw-" + c.id;
+    c.def = String(c.options[0][0]);
+  });
+  var ALL = FIXED.concat(content);
+  var saved = false; // 按過「存成我的預設」（只在有拍板摘要的頁用得到）
+  var state = {};
+  ALL.forEach(function (t) {
+    state[t.id] = t.def;
+  });
+
+  function label(t, v) {
+    if (t.kind === "range") return Math.round(parseFloat(v) * 100) + "%";
+    for (var i = 0; i < t.options.length; i++)
+      if (String(t.options[i][0]) === v) return txt(t.options[i][1]);
+    return v;
+  }
+  function apply(t) {
+    if (t.css) root.style.setProperty(t.css, state[t.id]);
+    if (t.attr) root.setAttribute(t.attr, state[t.id]);
+    if (t.id === "fs") root.classList.toggle("vt-fs", parseFloat(state.fs) !== 1);
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  // 切換語言時要重寫的文字：登記時先畫一次，切換時全部重跑
+  var paint = [];
+  function painted(fn) {
+    paint.push(fn);
+    fn();
+  }
+  // 頁面自己的介面文字（範本底部列的按鈕等）也跟著換：元素寫 data-en="英文"，原本的中文第一次換掉前先存進 data-zh。
+  // <html data-vt-lang> 給頁面腳本讀，組執行期文字（例如「已複製」）時用
+  painted(function () {
+    root.setAttribute("data-vt-lang", lang);
+    document.querySelectorAll("[data-en]").forEach(function (e) {
+      if (!e.hasAttribute("data-zh")) e.setAttribute("data-zh", e.textContent);
+      e.textContent = e.getAttribute(lang === "en" ? "data-en" : "data-zh");
+    });
+  });
+
+  var launch = el("button", "vt-tw-launch vt-tw-root");
+  launch.type = "button";
+  launch.setAttribute("aria-expanded", "false");
+  launch.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg>';
+  var lbl = launch.appendChild(el("span", "vt-tw-lbl"));
+  var pop = el("aside", "vt-tw-pop vt-tw-root");
+  pop.hidden = true;
+  painted(function () {
+    launch.setAttribute("aria-label", L.name);
+    launch.title = L.title;
+    lbl.textContent = L.short;
+    pop.setAttribute("aria-label", L.name);
+  });
+
+  function control(t) {
+    var wrap = el("div", "vt-tw-item");
+    var lab = el("div", "vt-tw-label");
+    var name = lab.appendChild(el("span"));
+    var val = el("span", "vt-tw-val");
+    lab.appendChild(val);
+    wrap.appendChild(lab);
+    function sync() {
+      val.textContent = label(t, state[t.id]);
+    }
+    if (t.kind === "range") {
+      var r = el("input");
+      r.type = "range";
+      r.min = t.min;
+      r.max = t.max;
+      r.step = t.step;
+      r.value = state[t.id];
+      r.addEventListener("input", function () {
+        state[t.id] = r.value;
+        apply(t);
+        sync();
+        refreshSave();
+      });
+      wrap.appendChild(r);
+      t.reset = function () {
+        r.value = t.def;
+      };
+    } else {
+      var seg = el("div", "vt-tw-seg");
+      t.options.forEach(function (o) {
+        var b = el("button");
+        b.type = "button";
+        painted(function () {
+          b.textContent = txt(o[1]);
+        });
+        b.setAttribute("data-v", String(o[0]));
+        b.addEventListener("click", function () {
+          state[t.id] = String(o[0]);
+          apply(t);
+          mark();
+          sync();
+          refreshSave();
+        });
+        seg.appendChild(b);
+      });
+      function mark() {
+        seg.querySelectorAll("button").forEach(function (b) {
+          b.classList.toggle(
+            "vt-tw-on",
+            b.getAttribute("data-v") === state[t.id],
+          );
+        });
+      }
+      mark();
+      t.reset = mark;
+      wrap.appendChild(seg);
+    }
+    if (t.hint) wrap.appendChild(el("div", "vt-tw-hint", t.hint));
+    t.sync = sync;
+    painted(function () {
+      name.textContent = txt(t.label);
+      if (r) r.setAttribute("aria-label", txt(t.label));
+      sync();
+    });
+    return wrap;
+  }
+  var first = pop.appendChild(el("div", "vt-tw-sec vt-tw-first"));
+  var firstText = first.appendChild(el("span"));
+  var langBtn = first.appendChild(el("button", "vt-tw-lang"));
+  langBtn.type = "button";
+  painted(function () {
+    firstText.textContent = L.fixed;
+    langBtn.textContent = L.swap;
+  });
+  FIXED.forEach(function (t) {
+    pop.appendChild(control(t));
+  });
+  if (content.length) {
+    var sec = pop.appendChild(el("div", "vt-tw-sec"));
+    painted(function () {
+      sec.textContent = L.content;
+    });
+    content.forEach(function (t) {
+      pop.appendChild(control(t));
+    });
+  }
+  var actions = el("div", "vt-tw-actions");
+  var resetBtn = el("button");
+  resetBtn.type = "button";
+  painted(function () {
+    resetBtn.textContent = L.reset;
+  });
+  var saveBtn = el("button", "vt-tw-pri");
+  saveBtn.type = "button";
+  actions.appendChild(resetBtn);
+  actions.appendChild(saveBtn);
+  pop.appendChild(actions);
+  var saveHint = el("div", "vt-tw-hint");
+  pop.appendChild(saveHint);
+  // 複製不到時的出路：指令放進這裡並全選，使用者按 Cmd+C（純展示頁沒有頁面自帶的複製函式）
+  var manual = el("textarea", "vt-tw-manual");
+  manual.readOnly = true;
+  manual.rows = 4;
+  manual.hidden = true;
+  pop.appendChild(manual);
+  var flashTimer = null;
+
+  function changedFixed() {
+    return FIXED.filter(function (t) {
+      return state[t.id] !== t.def;
+    });
+  }
+  function profileValue(t, v) {
+    if (t.options) {
+      for (var i = 0; i < t.options.length; i++)
+        if (String(t.options[i][0]) === v) return t.options[i][2];
+    }
+    return String(Math.round(parseFloat(v) * 100) / 100);
+  }
+  function hasSummary() {
+    return typeof window.vtBuildDecisionExport === "function";
+  }
+  function saveText(ch) {
+    return (
+      L.head +
+      ch
+        .map(function (t) {
+          return txt(t.label) + L.pair + label(t, state[t.id]);
+        })
+        .join(L.join) +
+      L.tail +
+      // 雙引號：路徑以 $HOME 開頭，單引號裡不會展開
+      'python3 "' +
+      tool +
+      '" set ' +
+      ch
+        .map(function (t) {
+          return t.profile + "=" + profileValue(t, state[t.id]);
+        })
+        .join(" ")
+    );
+  }
+  function refreshSave() {
+    var n = changedFixed().length;
+    // 只看目前的值：拖滑桿途中經過預設值那一格不該把已存取消
+    var on = saved && n > 0;
+    // 失敗時留下的文字框：設定一變，裡面的指令就過時了
+    if (!manual.hidden && manual.value !== saveText(changedFixed())) manual.hidden = true;
+    saveBtn.disabled = !n;
+    if (hasSummary()) saveBtn.setAttribute("aria-pressed", String(on));
+    saveBtn.textContent = on ? L.added : L.save;
+    saveHint.textContent = !n
+      ? L.need(FIXED.map(function (t) {
+          return txt(t.label);
+        }))
+      : on
+        ? L.undo
+        : hasSummary()
+        ? L.toSummary
+        : L.toCopy;
+  }
+  window.vtCollectTweaks = function () {
+    var ch = changedFixed();
+    return saved && ch.length ? "\n\n" + saveText(ch) : "";
+  };
+  resetBtn.addEventListener("click", function () {
+    saved = false;
+    ALL.forEach(function (t) {
+      state[t.id] = t.def;
+      apply(t);
+      t.reset();
+      t.sync();
+    });
+    refreshSave();
+  });
+  saveBtn.addEventListener("click", async function () {
+    if (hasSummary()) {
+      saved = !saved;
+      refreshSave();
+      return;
+    }
+    // 沒有拍板摘要的頁：按鈕本身就是出口，直接複製
+    var text = saveText(changedFixed());
+    var ok = false;
+    manual.hidden = true;
+    if (window.vtCopyText) ok = await window.vtCopyText(text);
+    // 沒有頁面的複製函式就直接走下面：在點擊當下同步複製，不先 await 別的 API 把使用者手勢耗掉
+    if (!ok) {
+      manual.value = text;
+      manual.hidden = false;
+      manual.select();
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {}
+      if (ok) manual.hidden = true;
+    }
+    saveBtn.textContent = ok ? L.copied : L.select;
+    clearTimeout(flashTimer); // 連點時舊計時器不能提早蓋掉新回饋
+    flashTimer = setTimeout(refreshSave, ok ? 2000 : 6000);
+  });
+  // 面板開在按鈕上方：按鈕在右半就右緣對齊、左半就左緣對齊；
+  // 按鈕上方不到 200px（視窗矮、底部列展開）就改貼畫面頂端，不讓面板頂端跑出畫面
+  function place() {
+    var r = launch.getBoundingClientRect();
+    var w = Math.min(330, window.innerWidth * 0.92);
+    var x = r.left + r.width / 2 > window.innerWidth / 2 ? r.right - w : r.left;
+    // 預覽鈕在列中間時（非範本的列）對齊邊緣會出界，夾回畫面內
+    pop.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 8)) + "px";
+    var low = r.top - 24 < 200;
+    pop.style.top = low ? "12px" : "auto";
+    pop.style.bottom = low ? "auto" : window.innerHeight - r.top + 10 + "px";
+    pop.style.maxHeight = (low ? window.innerHeight - 24 : r.top - 24) + "px";
+  }
+  langBtn.addEventListener("click", function () {
+    lang = lang === "zh" ? "en" : "zh";
+    L = LANG[lang];
+    try {
+      localStorage.setItem("vt-tw-lang", lang);
+    } catch (e) {}
+    paint.forEach(function (f) {
+      f();
+    });
+    refreshSave();
+  });
+  function setOpen(open) {
+    if (open) place();
+    pop.hidden = !open;
+    launch.setAttribute("aria-expanded", String(open));
+  }
+  launch.addEventListener("click", function () {
+    setOpen(pop.hidden);
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !pop.hidden) setOpen(false);
+  });
+  document.addEventListener("click", function (ev) {
+    // 用事件當下的路徑判斷（按鈕若在點擊後被重畫移除，closest 會找不到而誤關）
+    var inside = ev.composedPath().some(function (el) {
+      return el.classList && el.classList.contains("vt-tw-root");
+    });
+    if (!pop.hidden && !inside) setOpen(false);
+  });
+  // 把「設定檔變更」段接進評論收集函式：所有複製摘要都已經照規定拼接它，不必逐一改寫
+  function hook() {
+    var orig = window.vtCollectComments;
+    window.vtCollectComments = function () {
+      return window.vtCollectTweaks() + (orig ? orig() : "");
+    };
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", hook);
+  else hook();
+  // querySelector：頁面沒有預覽鈕是正常的，不該讓 verify 的元素參照檢查報缺漏（同上方 vt-tweaks 的寫法）
+  var dock = document.querySelector("#preview-btn");
+  document.body.appendChild(pop);
+  if (dock) {
+    launch.classList.add("vt-tw-docked");
+    dock.parentNode.insertBefore(launch, dock);
+  } else document.body.insertBefore(launch, pop); // Tab 順序：按鈕→面板
+  // 縮放、捲動時按鈕會跟著列移動（捲到頁尾，列會被頁尾往上推），開著的面板要跟著對齊
+  function follow() {
+    if (!pop.hidden) place();
+  }
+  window.addEventListener("resize", follow);
+  window.addEventListener("scroll", follow, { passive: true });
+  refreshSave();
+})();
+
+</script>
+<!-- vt-tweaks:end -->
+</body>
+</html>
