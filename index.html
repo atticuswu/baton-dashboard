@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baton 儀表板</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --paper: #ffffff;
+        --red: #da291c;
+        --grey-600: #6b6b6b;
+        --grey-200: #d9d9d9;
+        --font: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        --mono: "SF Mono", Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--paper); color: var(--ink);
+        font-family: var(--font); font-size: 15px; line-height: 1.6;
+      }
+      main { max-width: 760px; margin: 0 auto; padding: 64px 24px 96px; }
+      header { border-bottom: 1px solid var(--ink); padding-bottom: 16px; margin-bottom: 8px; }
+      h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 4px; }
+      .sub { color: var(--grey-600); margin: 0; }
+      .list { margin: 0; padding: 0; list-style: none; }
+      .item { border-bottom: 1px solid var(--grey-200); }
+      .item a {
+        display: grid; grid-template-columns: 1fr auto; gap: 4px 24px; align-items: baseline;
+        padding: 20px 4px; color: inherit; text-decoration: none;
+      }
+      .item a:hover .name { color: var(--red); }
+      .name { font-size: 20px; font-weight: 700; }
+      .area { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey-600); white-space: nowrap; }
+      .desc { grid-column: 1 / -1; color: var(--grey-600); font-size: 14px; max-width: 60ch; }
+      .src { grid-column: 1 / -1; font-family: var(--mono); font-size: 11px; color: var(--grey-600); }
+      .empty { color: var(--grey-600); padding: 24px 4px; }
+      footer { margin-top: 48px; font-family: var(--mono); font-size: 11px; color: var(--grey-600); }
+      @media (max-width: 600px) {
+        main { padding: 32px 16px 64px; }
+        .item a { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Baton 儀表板</h1>
+        <p class="sub">多電腦協同開發的接力棒。每個儀表板一個子路徑，由私有倉庫 atticuswu/Baton 自動發布。</p>
+      </header>
+      <ul class="list" id="list"></ul>
+      <footer>這個網址沒有存取控制，任何人拿到都能看。</footer>
+    </main>
+    <script src="dashboards.js"></script>
+    <script>
+      (function () {
+        const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+        const list = document.getElementById("list");
+        const items = window.DASHBOARDS || [];
+        if (!items.length) { list.innerHTML = '<li class="empty">還沒有儀表板。</li>'; return; }
+        list.innerHTML = items.map((d) => `
+          <li class="item"><a href="${esc(d.path)}">
+            <span class="name">${esc(d.name)}</span>
+            <span class="area">${esc(d.area)}</span>
+            <span class="desc">${esc(d.desc)}</span>
+            ${d.source ? `<span class="src">${esc(d.source)}</span>` : ""}
+          </a></li>`).join("");
+      })();
+    </script>
+  </body>
+</html>
